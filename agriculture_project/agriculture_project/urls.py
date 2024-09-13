@@ -16,7 +16,13 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
+from farm_management import views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('', views.farm_list, name='farm_list'),
+    path('farm/<int:farm_id>/', views.farm_detail, name='farm_detail'),
+    path('farm/add/', views.add_farm, name='add_farm'),
+    path('farm/<int:farm_id>/add_weather/', views.add_weather_data, name='add_weather_data'),
+    path('farm/<int:farm_id>/add_recommendation/', views.add_recommendation, name='add_recommendation'),
 ]

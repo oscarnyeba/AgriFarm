@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+
+{% block title %}{{ farm.farm_name }}{% endblock %}
+
+{% block content %}
+    <h1>{{ farm.farm_name }}</h1>
+    <p>Location: {{ farm.location }}</p>
+    <p>Total Area: {{ farm.total_area }} hectares</p>
+    
+    <h2>Weather Data</h2>
+    <table>
+        <tr>
+            <th>Date</th>
+            <th>Temperature (°C)</th>
+            <th>Humidity (%)</th>
+            <th>Rainfall (mm)</th>
+        </tr>
+        {% for data in weather_data %}
+        <tr>
+            <td>{{ data.date }}</td>
+            <td>{{ data.temperature }}</td>
+            <td>{{ data.humidity }}</td>
+            <td>{{ data.rainfall }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+    <a href="{% url 'add_weather_data' farm.id %}">Add Weather Data</a>
+    
+    <h2>Recommendations</h2>
+    <ul>
+    {% for rec in recommendations %}
+        <li>{{ rec.date }} - {{ rec.crop.crop_name }}: {{ rec.recommendation_text }}</li>
+    {% endfor %}
+    </ul>
+    <a href="{% url 'add_recommendation' farm.id %}">Add Recommendation</a>
+{% endblock %}

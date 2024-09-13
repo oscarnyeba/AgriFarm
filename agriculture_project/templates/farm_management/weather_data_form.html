@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+
+{% block title %}Add Weather Data{% endblock %}
+
+{% block content %}
+    <h1>Add Weather Data for {{ farm.farm_name }}</h1>
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Save</button>
+    </form>
+{% endblock %}
