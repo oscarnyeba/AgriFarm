@@ -129,5 +129,5 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-WEATHER_API_KEY = 'SsJjXrGLWZQrtXVXjP2UcpbA1g1qZwH6'
+WEATHER_API_KEY = 'd7b079aab3d762c9a8ad5a6d734ece7e'
 

@@ -4,6 +4,8 @@ from .models import Farm, Crop, WeatherData, Recommendation
 from .forms import FarmForm, WeatherDataForm, RecommendationForm
 from django.conf import settings
 import requests
+import logging
+
 
 def farm_list(request):
     query = request.GET.get('q', '')  # Default to empty string if query is None
@@ -37,16 +39,31 @@ def add_farm(request):
 def add_weather_data(request, farm_id):
     farm = get_object_or_404(Farm, id=farm_id)
     weather_info = None
+
     if request.method == 'POST':
         form = WeatherDataForm(request.POST)
-        if form.is_valid():
-            weather_data = form.save(commit=False)
-            weather_data.farm = farm
-            weather_data.save()
-            return redirect('farm_detail', farm_id=farm.id)
+        if form.is_valid():  # Ensure this is indented properly
+            date = form.cleaned_data['date']
+            weather_info = fetch_weather_data(farm.location, date)
+
+            if weather_info:
+                weather_data = form.save(commit=False)
+                weather_data.farm = farm
+                weather_data.temperature = weather_info['temperature']
+                weather_data.humidity = weather_info['humidity']
+                weather_data.rainfall = weather_info['rainfall']
+                weather_data.save()
+                return redirect('farm_detail', farm_id=farm.id)
+            else:
+                form.add_error(None, 'Failed to fetch weather data from the API')  # Custom error message
     else:
-        form = WeatherDataForm()
-    return render(request, 'farm_management/weather_data_form.html', {'form': form, 'farm': farm})
+        form = WeatherDataForm()  # Initialize form for GET request
+
+    return render(request, 'farm_management/weather_data_form.html', {
+        'form': form,
+        'farm': farm,
+        'weather_info': weather_info  # Pass the fetched weather info to the template
+    })
 
 def add_recommendation(request, farm_id):
     farm = get_object_or_404(Farm, id=farm_id)
@@ -70,57 +87,25 @@ def farm_list(request):
 
     return render(request, 'farm_management/farm_list.html', {'farms': farms})
 
-# API Key for weather (replace with your actual API key)
-WEATHER_API_KEY = 'your_api_key'  # Add this to your Django settings securely
+
 
 def fetch_weather_data(location, date):
     """
-    Function to fetch weather data from external API based on farm location and date
+    Function to fetch weather data from OpenWeather based on farm location (city name or coordinates)
     """
     api_key = settings.WEATHER_API_KEY
-    api_url = f"https://api.tomorrow.io/v4/weather/forecast?location={location}&apikey={api_key}&dt={date}"
+    # Example of using a city name for the API call (you can use lat/lon if available)
+    api_url = f"http://api.openweathermap.org/data/2.5/weather?q={location}&appid={api_key}&units=metric"
 
     response = requests.get(api_url)
 
     if response.status_code == 200:
         weather_data = response.json()
-        # Extract temperature, humidity, and rainfall from the API response (adjust based on API structure)
-        forecast = weather_data['forecast']['forecastday'][0]['day']
+        # Extract temperature, humidity, and rainfall from the API response
         return {
-            'temperature': forecast['avgtemp_c'],
-            'humidity': forecast['avghumidity'],
-            'rainfall': forecast['totalprecip_mm'],
+            'temperature': weather_data['main']['temp'],
+            'humidity': weather_data['main']['humidity'],
+            'rainfall': weather_data.get('rain', {}).get('1h', 0)  # Safely handle missing 'rain'
         }
     else:
         return None  # Handle error or return default values
-
-def add_weather_data(request, farm_id):
-    farm = get_object_or_404(Farm, id=farm_id)
-    weather_info = None
-
-    if request.method == 'POST':
-        form = WeatherDataForm(request.POST)
-        if form.is_valid():
-            # Fetch weather data from the external API
-            date = form.cleaned_data['date']
-            weather_info = fetch_weather_data(farm.location, date)
-
-            if weather_info:
-                # If API returned valid data, store it in the database
-                weather_data = form.save(commit=False)
-                weather_data.farm = farm
-                weather_data.temperature = weather_info['temperature']
-                weather_data.humidity = weather_info['humidity']
-                weather_data.rainfall = weather_info['rainfall']
-                weather_data.save()
-                return redirect('farm_detail', farm_id=farm.id)
-            else:
-                form.add_error(None, 'Failed to fetch weather data from the API')
-    else:
-        form = WeatherDataForm()
-
-    return render(request, 'farm_management/weather_data_form.html', {
-        'form': form,
-        'farm': farm,
-        'weather_info': weather_info  # Pass the fetched weather info to the template
-    })
