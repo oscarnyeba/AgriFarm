@@ -10,6 +10,9 @@ class WeatherDataForm(forms.ModelForm):
     class Meta:
         model = WeatherData
         fields = ['date', 'temperature', 'humidity', 'rainfall']
+        widgets = {
+            'date': forms.DateInput(attrs={'type': 'text', 'class': 'datepicker'}),  # Text input to enable datepicker
+        }
 
 class RecommendationForm(forms.ModelForm):
     class Meta:

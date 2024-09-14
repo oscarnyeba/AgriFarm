@@ -1,14 +1,43 @@
 {% extends "base.html" %}
 
-{% block title %}Add Weather Data{% endblock %}
+{% block title %}Add Weather Data for {{ farm.farm_name }}{% endblock %}
 
 {% block content %}
     <h1>Add Weather Data for {{ farm.farm_name }}</h1>
+
+    <!-- Date Picker Form -->
     <form method="post">
         {% csrf_token %}
-        {{ form.as_p }}
-        <button type="submit">Save</button>
+        {{ form.date }}  <!-- Date picker field -->
+        <button type="submit">Fetch Weather Data</button>
     </form>
-    
-    
+
+    <!-- Display weather info after it has been fetched -->
+    {% if weather_info %}
+        <h2>Fetched Weather Data for {{ form.cleaned_data.date }}</h2>
+        <table class="weather-table">
+            <tr>
+                <th>Temperature (°C)</th>
+                <th>Humidity (%)</th>
+                <th>Rainfall (mm)</th>
+            </tr>
+            <tr>
+                <td>{{ weather_info.temperature }}</td>
+                <td>{{ weather_info.humidity }}</td>
+                <td>{{ weather_info.rainfall }}</td>
+            </tr>
+        </table>
+        <p>Click 'Submit' to store this data.</p>
+    {% endif %}
+
+    <!-- jQuery Datepicker initialization -->
+    <script>
+        $(function() {
+            $(".datepicker").datepicker({
+                dateFormat: 'yy-mm-dd',  // Format for Django DateField
+                changeMonth: true,       // Allow changing the month
+                changeYear: true         // Allow changing the year
+            });
+        });
+    </script>
 {% endblock %}
