@@ -53,3 +53,12 @@ def add_recommendation(request, farm_id):
     else:
         form = RecommendationForm()
     return render(request, 'farm_management/recommendation_form.html', {'form': form, 'farm': farm})
+
+def farm_list(request):
+    query = request.GET.get('q')
+    if query:
+        farms = Farm.objects.filter(farm_name__icontains=query)  # Filter farms by name
+    else:
+        farms = Farm.objects.all()  # Show all farms if no search query
+
+    return render(request, 'farm_management/farm_list.html', {'farms': farms})

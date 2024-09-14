@@ -4,10 +4,33 @@
 
 {% block content %}
     <h1>Farms</h1>
-    <ul>
-    {% for farm in farms %}
-        <li><a href="{% url 'farm_detail' farm.id %}">{{ farm.farm_name }}</a> - {{ farm.location }}</li>
-    {% endfor %}
-    </ul>
-    <a href="{% url 'add_farm' %}">Add New Farm</a>
+
+    <!-- Search Form -->
+    <form method="GET" action=".">
+        <input type="text" name="q" placeholder="Search farms by name..." value="{{ request.GET.q }}">
+    </form>
+
+    <table class="farm-table">
+        <thead>
+            <tr>
+                <th>Farm Name</th>
+                <th>Location</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for farm in farms %}
+                <tr>
+                    <td><a href="{% url 'farm_detail' farm.id %}">{{ farm.farm_name }}</a></td>
+                    <td>{{ farm.location }}</td>
+                </tr>
+            {% empty %}
+                <tr>
+                    <td colspan="2">No farms found.</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    
+    <button type="button" onclick="location.href='{% url 'add_farm' %}'">Add New Farm</button>
+    
 {% endblock %}
