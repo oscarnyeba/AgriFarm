@@ -15,3 +15,7 @@ class RecommendationForm(forms.ModelForm):
     class Meta:
         model = Recommendation
         fields = ['crop', 'date', 'recommendation_text']
+        widgets = {
+            'date': forms.DateInput(attrs={'type': 'date'}),
+        }
+        
