@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+
+{% block title %}Weather Data{% endblock %}
+
+{% block content %}
+    <h1>Check Weather Data</h1>
+    
+    <form method="POST">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Get Weather</button>
+    </form>
+
+    {% if weather_info %}
+        <h2>Weather Data for {{ form.cleaned_data.location }} on {{ form.cleaned_data.date }}</h2>
+        <ul>
+            <li><strong>Temperature:</strong> {{ weather_info.temperature }} °C</li>
+            <li><strong>Humidity:</strong> {{ weather_info.humidity }} %</li>
+            <li><strong>Rainfall:</strong> {{ weather_info.rainfall }} mm</li>
+        </ul>
+    {% endif %}
+
+{% endblock %}

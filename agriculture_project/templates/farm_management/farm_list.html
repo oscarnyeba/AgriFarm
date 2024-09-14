@@ -7,6 +7,7 @@
 
     <!-- Search Form -->
     <form method="GET" action=".">
+        {% csrf_token %}
         <input type="text" name="q" placeholder="Search farms by name..." value="{{ request.GET.q }}">
     </form>
 

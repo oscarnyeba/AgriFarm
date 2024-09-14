@@ -4,7 +4,11 @@ from .models import Farm, Crop, WeatherData, Recommendation
 from .forms import FarmForm, WeatherDataForm, RecommendationForm
 
 def farm_list(request):
-    farms = Farm.objects.all()
+    query = request.GET.get('q', '')  # Default to empty string if query is None
+    if query:
+        farms = Farm.objects.filter(farm_name__icontains=query)
+    else:
+        farms = Farm.objects.all()
     return render(request, 'farm_management/farm_list.html', {'farms': farms})
 
 def farm_detail(request, farm_id):
