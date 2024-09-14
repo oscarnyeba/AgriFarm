@@ -10,35 +10,14 @@
 </head>
 <body>
     <div class="container">
-        <!-- Navigation Bar -->
         <nav>
             <ul>
                 <li><a href="{% url 'farm_list' %}">Farms</a></li>
                 <li><a href="{% url 'add_farm' %}">Add Farm</a></li>
             </ul>
         </nav>
-
-        <!-- Content Block -->
         {% block content %}
-        
-        <!-- Farm List Section -->
-        <section class="farm-list">
-            {% for farm in farms %}
-            <div class="farm-card">
-                <img src="{{ farm.image_url }}" alt="Farm Image">
-                <div class="card-content">
-                    <h2 class="card-title">{{ farm.name }}</h2>
-                    <p class="card-description">{{ farm.description }}</p>
-                    <a href="{% url 'farm_detail' farm.id %}" class="card-btn">View Details</a>
-                </div>
-            </div>
-            {% endfor %}
-        </section>
-
         {% endblock %}
     </div>
-
-    <!-- Bootstrap JS -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

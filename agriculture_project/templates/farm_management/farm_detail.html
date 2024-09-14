@@ -6,31 +6,40 @@
     <h1>{{ farm.farm_name }}</h1>
     <p>Location: {{ farm.location }}</p>
     <p>Total Area: {{ farm.total_area }} hectares</p>
-    
+
+    <!-- Weather Data Section -->
     <h2>Weather Data</h2>
-    <table>
-        <tr>
-            <th>Date</th>
-            <th>Temperature (°C)</th>
-            <th>Humidity (%)</th>
-            <th>Rainfall (mm)</th>
-        </tr>
-        {% for data in weather_data %}
-        <tr>
-            <td>{{ data.date }}</td>
-            <td>{{ data.temperature }}</td>
-            <td>{{ data.humidity }}</td>
-            <td>{{ data.rainfall }}</td>
-        </tr>
-        {% endfor %}
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th>Temperature (°C)</th>
+                <th>Humidity (%)</th>
+                <th>Rainfall (mm)</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for data in weather_data %}
+            <tr>
+                <td>{{ data.date }}</td>
+                <td>{{ data.temperature }}</td>
+                <td>{{ data.humidity }}</td>
+                <td>{{ data.rainfall }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
     </table>
-    <a href="{% url 'add_weather_data' farm.id %}">Add Weather Data</a>
+    <a href="{% url 'add_weather_data' farm.id %}" class="btn btn-success">Add Weather Data</a>
     
+    <!-- Recommendations Section -->
     <h2>Recommendations</h2>
-    <ul>
-    {% for rec in recommendations %}
-        <li>{{ rec.date }} - {{ rec.crop.crop_name }}: {{ rec.recommendation_text }}</li>
-    {% endfor %}
+    <ul class="recommendation-list">
+        {% for rec in recommendations %}
+        <li>
+            <strong>{{ rec.date }} - {{ rec.crop.crop_name }}:</strong>
+            <p>{{ rec.recommendation_text }}</p>
+        </li>
+        {% endfor %}
     </ul>
-    <a href="{% url 'add_recommendation' farm.id %}">Add Recommendation</a>
+    <a href="{% url 'add_recommendation' farm.id %}" class="btn btn-success">Add Recommendation</a>
 {% endblock %}
