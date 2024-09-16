@@ -5,7 +5,7 @@ from .forms import FarmForm, WeatherDataForm, RecommendationForm
 from django.conf import settings
 import requests
 import logging
-from datetime import datetime
+from datetime import datetime, timedelta
 
 
 
@@ -46,8 +46,10 @@ def generate_crop_recommendation(farm, weather_info):
 def farm_detail(request, farm_id):
     farm = get_object_or_404(Farm, id=farm_id)
     weather_info = fetch_weather_data(farm.location, None)
+    today = datetime.now().date()  # Ensure `today` is initialized
     if weather_info:
-         weather_data, created = WeatherData.objects.update_or_create(
+        today = datetime.now().date()
+        weather_data_today, created = WeatherData.objects.update_or_create(
             farm=farm,
             date=datetime.now().date(),
             defaults={
@@ -56,11 +58,24 @@ def farm_detail(request, farm_id):
                 'rainfall': weather_info['rainfall'],
             }
         )
-    weather_data = WeatherData.objects.filter(farm=farm).order_by('-date')[:10]
-    recommendations = generate_crop_recommendation(farm, weather_info)
+    else:
+        # If fetching weather data fails, use the latest stored weather data for today if available
+        weather_data_today = WeatherData.objects.filter(farm=farm, date=datetime.now().date()).first()
+
+    # Fetch the latest weather data to show in the template (excluding today for historical data)
+    weather_history = WeatherData.objects.filter(farm=farm, date__lt=today).order_by('-date')[:10]
+
+    # Generate crop recommendations based on today's weather data
+    recommendations = generate_crop_recommendation(farm, {
+        'temperature': weather_data_today.temperature if weather_data_today else 'N/A',
+        'humidity': weather_data_today.humidity if weather_data_today else 'N/A',
+        'rainfall': weather_data_today.rainfall if weather_data_today else 'N/A',
+    })
+
     context = {
         'farm': farm,
-        'weather_data': weather_data,
+        'weather_info': weather_data_today,  # Pass today's weather data for current weather display
+        'weather_data': weather_history,  # Pass weather history data excluding today
         'recommendations': recommendations,
     }
     return render(request, 'farm_management/farm_detail.html', context)
@@ -109,7 +124,7 @@ def fetch_weather_data(location, date):
     Function to fetch weather data from OpenWeather based on farm location (city name or coordinates)
     """
     api_key = settings.WEATHER_API_KEY
-    api_url = f"http://api.openweathermap.org/data/2.5/weather?q={location}&appid={api_key}&units=metric"
+    api_url = f"http://api.openweathermap.org/data/3.0/weather?q={location}&appid={api_key}&units=metric"
 
     logging.info(f"Fetching weather data for {location} on {date}")
 
