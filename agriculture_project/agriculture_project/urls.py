@@ -27,5 +27,4 @@ urlpatterns = [
     path('farm/<int:farm_id>/', views.farm_detail, name='farm_detail'),
     path('farm/add/', views.add_farm, name='add_farm'),
     path('farm/<int:farm_id>/add_weather/', views.add_weather_data, name='add_weather_data'),
-    path('farm/<int:farm_id>/add_recommendation/', views.add_recommendation, name='add_recommendation'),
 ]

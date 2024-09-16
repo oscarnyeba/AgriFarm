@@ -15,9 +15,5 @@ class Migration(migrations.Migration):
             name='latitude',
             field=models.DecimalField(blank=True, decimal_places=6, max_digits=8, null=True),
         ),
-        migrations.AddField(
-            model_name='farm',
-            name='longitude',
-            field=models.DecimalField(blank=True, decimal_places=6, max_digits=9, null=True),
-        ),
+        
     ]

@@ -8,7 +8,34 @@
     <p>Total Area: {{ farm.total_area }} hectares</p>
 
     <!-- Weather Data Section -->
-    <h2>Weather Data</h2>
+    <h2>Current Weather Data for {{ farm.location }}</h2>
+    {% if weather_info %}
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th>Temperature (°C)</th>
+                <th>Humidity (%)</th>
+                <th>Rainfall (mm)</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>{{ weather_info.date }}</td>  <!-- Ensure date is set -->
+                <td>{{ weather_info.temperature }}</td>
+                <td>{{ weather_info.humidity }}</td>
+                <td>{{ weather_info.rainfall }}</td>
+            </tr>
+        </tbody>
+    </table>
+    {% else %}
+    <p>No current weather data available.</p>
+    {% endif %}
+    <a href="{% url 'add_weather_data' farm.id %}" class="btn btn-success">Add Weather Data</a>
+   
+    <!-- Historical Weather Data Section -->
+    <h2>Weather History</h2>
+    {% if weather_data %}
     <table class="table table-striped">
         <thead>
             <tr>
@@ -29,17 +56,20 @@
             {% endfor %}
         </tbody>
     </table>
-    <a href="{% url 'add_weather_data' farm.id %}" class="btn btn-success">Add Weather Data</a>
-    
+    {% else %}
+    <p>No historical weather data available.</p>
+    {% endif %}
+ 
     <!-- Recommendations Section -->
-    <h2>Recommendations</h2>
-    <ul class="recommendation-list">
-        {% for rec in recommendations %}
-        <li>
-            <strong>{{ rec.date }} - {{ rec.crop.crop_name }}:</strong>
-            <p>{{ rec.recommendation_text }}</p>
-        </li>
-        {% endfor %}
+    <h2>Recommended Crops Based on Current Weather</h2>
+    {% if recommendations %}
+    <ul>
+    {% for crop in recommendations %}
+        <li>{{ crop.crop_name }} - Suitable for current conditions</li>
+    {% endfor %}
     </ul>
-    <a href="{% url 'add_recommendation' farm.id %}" class="btn btn-success">Add Recommendation</a>
+    {% else %}
+    <p>No crops recommended based on current weather conditions. Please check back later or adjust the farm conditions.</p>
+    {% endif %}
+
 {% endblock %}

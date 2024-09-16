@@ -13,6 +13,12 @@ class Crop(models.Model):
     crop_name = models.CharField(max_length=50)
     crop_type = models.CharField(max_length=50)
     growing_season = models.CharField(max_length=50)
+    ideal_temperature_min = models.DecimalField(max_digits=5, decimal_places=2, default = 0)
+    ideal_temperature_max = models.DecimalField(max_digits=5, decimal_places=2, default=0)
+    ideal_humidity_min = models.DecimalField(max_digits=5, decimal_places=2, default =0)
+    ideal_humidity_max = models.DecimalField(max_digits=5, decimal_places=2, default =0)
+    ideal_rainfall_min = models.DecimalField(max_digits=5, decimal_places=2, default =0)
+    ideal_rainfall_max = models.DecimalField(max_digits=5, decimal_places=2, default =0)
 
     def __str__(self):
         return self.crop_name
@@ -35,3 +41,14 @@ class Recommendation(models.Model):
 
     def __str__(self):
         return f"{self.farm.farm_name} - {self.crop.crop_name} - {self.date}"
+    
+class Soil(models.Model):
+    farm = models.OneToOneField(Farm, on_delete=models.CASCADE)
+    ph_level = models.DecimalField(max_digits=4, decimal_places=2)
+    nitrogen_level = models.DecimalField(max_digits=5, decimal_places=2)
+    phosphorus_level = models.DecimalField(max_digits=5, decimal_places=2)
+    potassium_level = models.DecimalField(max_digits=5, decimal_places=2)
+    
+    def __str__(self):
+        return f"Soil conditions for {self.farm.farm_name}"
+
