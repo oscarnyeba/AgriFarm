@@ -45,24 +45,28 @@ def generate_crop_recommendation(farm, weather_info):
 
 def farm_detail(request, farm_id):
     farm = get_object_or_404(Farm, id=farm_id)
-    weather_info = fetch_weather_data(farm.location, None)
-    today = datetime.now().date()  # Ensure `today` is initialized
-    if weather_info:
-        today = datetime.now().date()
-        weather_data_today, created = WeatherData.objects.update_or_create(
-            farm=farm,
-            date=datetime.now().date(),
-            defaults={
-                'temperature': weather_info['temperature'],
-                'humidity': weather_info['humidity'],
-                'rainfall': weather_info['rainfall'],
-            }
-        )
-    else:
-        # If fetching weather data fails, use the latest stored weather data for today if available
-        weather_data_today = WeatherData.objects.filter(farm=farm, date=datetime.now().date()).first()
+    today = datetime.now().date()
 
-    # Fetch the latest weather data to show in the template (excluding today for historical data)
+        
+     # Fetch weather data for today
+    weather_data_today = WeatherData.objects.filter(farm=farm, date=today).first()
+   
+    # If no weather data is saved for today, attempt to fetch it from the API
+    if not weather_data_today:
+        weather_info = fetch_weather_data(farm.location, None)  # Fetch current weather from API
+        if weather_info:
+            # If fetched from the API, save the new weather data for today
+            weather_data_today, created = WeatherData.objects.update_or_create(
+                farm=farm,
+                date=today,
+                defaults={
+                    'temperature': weather_info['temperature'],
+                    'humidity': weather_info['humidity'],
+                    'rainfall': weather_info['rainfall'],
+                }
+            )
+
+    # Fetch weather history (only dates before today)
     weather_history = WeatherData.objects.filter(farm=farm, date__lt=today).order_by('-date')[:10]
 
     # Generate crop recommendations based on today's weather data
@@ -74,9 +78,9 @@ def farm_detail(request, farm_id):
 
     context = {
         'farm': farm,
-        'weather_info': weather_data_today,  # Pass today's weather data for current weather display
-        'weather_data': weather_history,  # Pass weather history data excluding today
-        'recommendations': recommendations,
+        'weather_info': weather_data_today,  # Pass today's weather info for current display
+        'weather_data': weather_history,     # Pass weather history excluding today
+        'recommendations': recommendations,  # Pass crop recommendations
     }
     return render(request, 'farm_management/farm_detail.html', context)
 
@@ -96,22 +100,29 @@ def add_weather_data(request, farm_id):
 
     if request.method == 'POST':
         form = WeatherDataForm(request.POST)
-        if form.is_valid():  
-            date = form.cleaned_data['date']
-            weather_info = fetch_weather_data(farm.location, date)
+        if form.is_valid():
+            selected_date = form.cleaned_data['date']
+             # Check if weather data for the selected date already exists
+            weather_data_exists = WeatherData.objects.filter(farm=farm, date=selected_date).exists()
+            if not weather_data_exists:
+                # If not in DB, fetch weather from the API for the selected date
+                weather_info = fetch_weather_data(farm.location, selected_date)
 
             if weather_info:
                 weather_data = form.save(commit=False)
                 weather_data.farm = farm
-                weather_data.temperature = weather_info['temperature',0]
-                weather_data.humidity = weather_info['humidity',0]
-                weather_data.rainfall = weather_info['rainfall',0]
+                weather_data.temperature = weather_info.get('temperature',0)
+                weather_data.humidity = weather_info.get('humidity',0)
+                weather_data.rainfall = weather_info.get('rainfall',0)
                 weather_data.save()
                 return redirect('farm_detail', farm_id=farm.id)
             else:
                 form.add_error(None, 'Failed to fetch weather data from the API')  # Custom error message
+        else:
+            form.add_error(None, f"Weather data for {selected_date} already exists.")
     else:
-        form = WeatherDataForm()  # Initialize form for GET request
+        form = WeatherDataForm()
+
 
     return render(request, 'farm_management/weather_data_form.html', {
         'form': form,
@@ -119,12 +130,12 @@ def add_weather_data(request, farm_id):
         'weather_info': weather_info  # Pass the fetched weather info to the template
     })
 
-def fetch_weather_data(location, date):
+def fetch_weather_data(location, date= None):
     """
     Function to fetch weather data from OpenWeather based on farm location (city name or coordinates)
     """
     api_key = settings.WEATHER_API_KEY
-    api_url = f"http://api.openweathermap.org/data/3.0/weather?q={location}&appid={api_key}&units=metric"
+    api_url = f"http://api.openweathermap.org/data/2.5/weather?q={location}&appid={api_key}&units=metric"
 
     logging.info(f"Fetching weather data for {location} on {date}")
 

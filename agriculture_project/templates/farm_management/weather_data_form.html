@@ -8,13 +8,13 @@
     <!-- Date Picker Form -->
     <form method="post">
         {% csrf_token %}
-        {{ form.date }}  <!-- Date picker field -->
+        {{ form.as_p }}  <!-- Renders the form fields including date -->
         <button type="submit">Fetch Weather Data</button>
     </form>
 
     <!-- Display weather info after it has been fetched -->
     {% if weather_info %}
-    <h2>Weather Data for {{ farm.location }}</h2>
+    <h2>Weather Data for {{ farm.location }} on {{ form.cleaned_data.date }}</h2>
     <table>
         <tr>
             <th>Temperature (°C)</th>
@@ -27,10 +27,10 @@
             <td>{{ weather_info.rainfall }}</td>
         </tr>
     </table>
-{% else %}
-    <p>Click 'Submit' to store this data.</p>
+    {% endif %}
+    
+{% if not weather_info %}
 {% endif %}
-
 
     <!-- jQuery Datepicker initialization -->
     <script>

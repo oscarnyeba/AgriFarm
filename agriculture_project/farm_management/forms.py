@@ -9,9 +9,9 @@ class FarmForm(forms.ModelForm):
 class WeatherDataForm(forms.ModelForm):
     class Meta:
         model = WeatherData
-        fields = ['date', 'temperature', 'humidity', 'rainfall']
+        fields = ['date']
         widgets = {
-            'date': forms.DateInput(attrs={'type': 'text', 'class': 'datepicker'}),  # Text input to enable datepicker
+            'date': forms.DateInput(attrs={'class': 'datepicker'}),  # Text input to enable datepicker
         }
 
 class RecommendationForm(forms.ModelForm):
