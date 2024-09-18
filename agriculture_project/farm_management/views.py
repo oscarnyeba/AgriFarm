@@ -1,99 +1,185 @@
+from django.db import transaction
+from django.db.models import Q
+import logging
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.shortcuts import render, get_object_or_404, redirect
+from django.contrib.auth import login, authenticate
+from django.contrib.auth.decorators import login_required
 from django.urls import reverse
-from .models import Farm, Crop, WeatherData, Recommendation
-from .forms import FarmForm, WeatherDataForm, RecommendationForm
+from .models import Farm, Crop, WeatherData, Recommendation, Profile
+from .forms import FarmForm, WeatherDataForm, RecommendationForm, RegistrationForm
 from django.conf import settings
 import requests
 import logging
 from datetime import datetime, timedelta
+from django.contrib.auth.forms import AuthenticationForm
+from django.views.decorators.csrf import csrf_protect 
+from decimal import Decimal
 
 
 
-def farm_list(request):
-    query = request.GET.get('q', '') 
-    if query:
-        farms = Farm.objects.filter(farm_name__icontains=query)
+
+def register(request):
+    if request.method == 'POST':
+        form = RegistrationForm(request.POST)
+        if form.is_valid():
+            user = form.save(commit=False)
+            user.set_password(form.cleaned_data['password'])
+            user.save()
+            
+            # Create Profile
+            Profile.objects.create(
+                user=user,
+                user_type=form.cleaned_data['user_type']
+            )
+
+            # Log registration event
+            logging.info(f"User registered: {user.username}")
+
+            # Auto-login after registration
+            login(request, user)
+            return redirect(reverse('farm_list'))
     else:
-        farms = Farm.objects.all()
+        form = RegistrationForm()
+    
+    return render(request, 'registration/register.html', {'form': form})
+
+@csrf_protect
+def login_view(request):
+    if request.method == 'POST':
+        form = AuthenticationForm(request, data=request.POST)
+        try:
+            if form.is_valid():
+                user = authenticate(request, username=form.cleaned_data['username'], password=form.cleaned_data['password'])
+                if user is not None:
+                    login(request, user)
+                    logging.info(f"Successful login attempt for user: {user.username}")
+                    return redirect('farm_list')
+                else:
+                    logging.warning("Invalid login attempt")
+        except Exception as e:
+            return render(request, 'registration/login.html', {'form': form, 'error': str(e)})
+    elif request.user.is_authenticated:
+        return redirect('login')
+    else:
+        form = AuthenticationForm()
+
+    return render(request, 'registration/login.html', {'form': form})
+
+@login_required
+def farm_list_view(request):
+    query = request.GET.get('q', '') 
+    farms = Farm.objects.filter(owner=request.user)
+    
+    paginator = Paginator(farms, 10)  # Show 10 farms per page
+    page = request.GET.get('page')
+    try:
+        farms = paginator.page(page)
+    except PageNotAnInteger:
+        farms = paginator.page(1)
+    except EmptyPage:
+        farms = paginator.page(paginator.num_pages)
+
     return render(request, 'farm_management/farm_list.html', {'farms': farms})
 
+@login_required
 def generate_crop_recommendation(farm, weather_info):
     """
     Generate crop recommendations based on current weather data.
     """
-    # If weather data is unavailable, return an empty list
-    if not weather_info or any(value == 'N/A' for value in weather_info.values()):
+    try:
+        # If weather data is unavailable, return an empty list
+        if not weather_info or any(value == 'N/A' for value in weather_info.values()):
+            logging.warning('Weather data is unavailable or contains N/A values.')
+            return []
+
+        # Convert weather data to Decimal for comparison
+        current_temperature = Decimal(weather_info['temperature'])
+        current_humidity = Decimal(weather_info['humidity'])
+        current_rainfall = Decimal(weather_info['rainfall'])
+
+        # Filter crops based on the ideal conditions using Q objects
+        recommended_crops = Crop.objects.filter(
+            Q(ideal_temperature_min__lte=current_temperature) &
+            Q(ideal_temperature_max__gte=current_temperature) &
+            Q(ideal_humidity_min__lte=current_humidity) &
+            Q(ideal_humidity_max__gte=current_humidity) &
+            Q(ideal_rainfall_min__lte=current_rainfall) &
+            Q(ideal_rainfall_max__gte=current_rainfall)
+        )
+
+        return recommended_crops
+    except (ValueError, Crop.DoesNotExist) as e:
+        logging.error(f"Error in generating crop recommendation: {e}")
         return []
 
-    # Convert weather data to floats for comparison
-    current_temperature = float(weather_info['temperature'])
-    current_humidity = float(weather_info['humidity'])
-    current_rainfall = float(weather_info['rainfall'])
-
-    # Filter crops based on the ideal conditions
-    recommended_crops = Crop.objects.filter(
-        ideal_temperature_min__lte=current_temperature,
-        ideal_temperature_max__gte=current_temperature,
-        ideal_humidity_min__lte=current_humidity,
-        ideal_humidity_max__gte=current_humidity,
-        ideal_rainfall_min__lte=current_rainfall,
-        ideal_rainfall_max__gte=current_rainfall,
-    )
-
-    return recommended_crops
 
 
+@login_required
 def farm_detail(request, farm_id):
-    farm = get_object_or_404(Farm, id=farm_id)
+    farm = get_object_or_404(Farm.objects.prefetch_related('weatherdata_set'), id=farm_id)
     today = datetime.now().date()
+    if request.user != farm.owner:
+        # Optionally, you can raise a permission denied error or redirect
+        return redirect('farm_list')
+    def fetch_or_update_weather_data(farm, date):
+        weather_data_today = WeatherData.objects.filter(farm=farm, date=date).first()
 
-        
-     # Fetch weather data for today
-    weather_data_today = WeatherData.objects.filter(farm=farm, date=today).first()
-   
-    # If no weather data is saved for today, attempt to fetch it from the API
-    if not weather_data_today:
-        weather_info = fetch_weather_data(farm.location, None)  # Fetch current weather from API
-        if weather_info:
-            # If fetched from the API, save the new weather data for today
-            weather_data_today, created = WeatherData.objects.update_or_create(
-                farm=farm,
-                date=today,
-                defaults={
-                    'temperature': weather_info['temperature'],
-                    'humidity': weather_info['humidity'],
-                    'rainfall': weather_info['rainfall'],
-                }
-            )
+        if not weather_data_today:
+            try:
+                weather_info = fetch_weather_data(farm.location, None)  # Fetch current weather from API
+                if weather_info:
+                    with transaction.atomic():
+                        weather_data_today, created = WeatherData.objects.update_or_create(
+                            farm=farm,
+                            date=date,
+                            defaults={
+                                'temperature': weather_info['temperature'],
+                                'humidity': weather_info['humidity'],
+                                'rainfall': weather_info['rainfall'],
+                            }
+                        )
+            except Exception as e:
+                logging.error(f"Error fetching weather data: {e}")
 
-    # Fetch weather history (only dates before today)
-    weather_history = WeatherData.objects.filter(farm=farm, date__lt=today).order_by('-date')[:10]
+        return weather_data_today
 
-    # Generate crop recommendations based on today's weather data
-    recommendations = generate_crop_recommendation(farm, {
-        'temperature': weather_data_today.temperature if weather_data_today else 'N/A',
-        'humidity': weather_data_today.humidity if weather_data_today else 'N/A',
-        'rainfall': weather_data_today.rainfall if weather_data_today else 'N/A',
-    })
+    weather_data_today = fetch_or_update_weather_data(farm, today)
 
+    weather_history = farm.weatherdata_set.filter(date__lt=today).order_by('-date')[:10]
+
+    weather_info = {
+        'temperature': weather_data_today.temperature if weather_data_today else None,
+        'humidity': weather_data_today.humidity if weather_data_today else None,
+        'rainfall': weather_data_today.rainfall if weather_data_today else None
+    }
+    recommendations = generate_crop_recommendation(farm, weather_info)
     context = {
         'farm': farm,
-        'weather_info': weather_data_today,  # Pass today's weather info for current display
-        'weather_data': weather_history,     # Pass weather history excluding today
-        'recommendations': recommendations,  # Pass crop recommendations
+        'weather_info': weather_data_today,
+        'weather_data': weather_history,
+        'recommendations': recommendations,
     }
     return render(request, 'farm_management/farm_detail.html', context)
-
+@login_required
+@csrf_protect
 def add_farm(request):
     if request.method == 'POST':
         form = FarmForm(request.POST)
-        if form.is_valid():
-            form.save()
-            return redirect('farm_list')
+        try:
+            if form.is_valid():
+                with transaction.atomic():
+                    farm = form.save(commit=False)
+                    farm.owner = request.user
+                    form.save()
+                return redirect(reverse('farm_list'))
+        except Exception as e:
+            logging.error(f"An error occurred while saving the form: {e}")
     else:
         form = FarmForm()
     return render(request, 'farm_management/farm_form.html', {'form': form})
 
+@login_required
 def add_weather_data(request, farm_id):
     farm = get_object_or_404(Farm, id=farm_id)
     weather_info = None
@@ -102,15 +188,13 @@ def add_weather_data(request, farm_id):
         form = WeatherDataForm(request.POST)
         if form.is_valid():
             selected_date = form.cleaned_data['date']
-             # Check if weather data for the selected date already exists
-            weather_data_exists = WeatherData.objects.filter(farm=farm, date=selected_date).exists()
-            if not weather_data_exists:
-                # If not in DB, fetch weather from the API for the selected date
+             # Use get_or_create to fetch or create weather data for the selected date
+            weather_data, created = WeatherData.objects.filter(farm=farm, date=selected_date).first()
+            if created:
+                # If created, fetch weather from the API for the selected date
                 weather_info = fetch_weather_data(farm.location, selected_date)
 
             if weather_info:
-                weather_data = form.save(commit=False)
-                weather_data.farm = farm
                 weather_data.temperature = weather_info.get('temperature',0)
                 weather_data.humidity = weather_info.get('humidity',0)
                 weather_data.rainfall = weather_info.get('rainfall',0)
@@ -130,17 +214,21 @@ def add_weather_data(request, farm_id):
         'weather_info': weather_info  # Pass the fetched weather info to the template
     })
 
-def fetch_weather_data(location, date= None):
+def fetch_weather_data(location, date=None):
     """
     Function to fetch weather data from OpenWeather based on farm location (city name or coordinates)
     """
-    api_key = settings.WEATHER_API_KEY
-    api_url = f"http://api.openweathermap.org/data/2.5/weather?q={location}&appid={api_key}&units=metric"
+    if not location or not isinstance(location, str):
+        logging.error("Invalid location provided.")
+        return None
 
     logging.info(f"Fetching weather data for {location} on {date}")
 
     try:
-        response = requests.get(api_url)
+        api_key = settings.WEATHER_API_KEY
+        api_url = f"https://api.openweathermap.org/data/2.5/weather?q={location}&appid={api_key}&units=metric"
+
+        response = requests.get(api_url, timeout=10)
         response.raise_for_status()
         weather_data = response.json()
         logging.info(f'Weather data fetched {weather_data}')
@@ -154,5 +242,5 @@ def fetch_weather_data(location, date= None):
             'rainfall': rainfall
             }
     except requests.exceptions.RequestException as e:
-        logging.error(f"Error occurred during API call: {e}")
+        logging.exception(f"Error occurred during API call: {e}")
         return None

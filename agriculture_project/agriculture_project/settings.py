@@ -27,6 +27,10 @@ SECRET_KEY = 'django-insecure-=h-*yh3y_!$@-cpkh%5k-&wmxw%0)u_7b6-e^tw*lh0^ap#tc+
 DEBUG = True
 
 ALLOWED_HOSTS = []
+# agriculture_project/settings.py
+
+LOGOUT_REDIRECT_URL = '/login/'  # Or the named URL for login if you're using URL names
+
 
 
 # Application definition

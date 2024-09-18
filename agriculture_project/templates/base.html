@@ -10,18 +10,26 @@
 <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.js"></script>
 <link rel="stylesheet" href="https://code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css">
 
-
 </head>
-<body>
-    <div class="container">
-        <nav>
-            <ul>
-                <li><a href="{% url 'farm_list' %}">Farms</a></li>
-                <li><a href="{% url 'add_farm' %}">Add Farm</a></li>
-            </ul>
-        </nav>
-        {% block content %}
-        {% endblock %}
-    </div>    
+<body></body>
+    <nav>
+        <ul>
+            {% if request.path != '/login/' and request.path != '/register/' %}
+            <li><a href="{% url 'farm_list' %}">Farms</a></li>
+            <li><a href="{% url 'add_farm' %}">Add Farm</a></li>
+            {% endif %}
+            {% if user.is_authenticated %}
+            <li class="logout-form">
+                <form method="post" action="{% url 'logout' %}">
+                    {% csrf_token %}
+                    <button type="submit" class="logout-button">Logout</button>
+                </form>
+            </li>
+            {% else %}
+                <li><a href="{% url 'register' %}">Register</a></li>
+            {% endif %}
+        </ul>
+    </nav>
+    {% block content %}{% endblock %}
 </body>
 </html>
