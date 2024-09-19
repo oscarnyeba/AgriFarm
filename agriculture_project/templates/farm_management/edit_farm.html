@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Edit Farm: {{ farm.farm_name }}</h2>
+    
+    <form method="POST">
+        {% csrf_token %}
+        {{ form.as_p }}
+
+        <button type="submit" class="btn btn-success">Save Changes</button>
+        <a href="{% url 'farm_detail' farm.id %}" class="btn btn-secondary">Cancel</a>
+    </form>
+</div>
+{% endblock %}

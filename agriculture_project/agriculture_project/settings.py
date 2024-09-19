@@ -30,6 +30,9 @@ ALLOWED_HOSTS = []
 # agriculture_project/settings.py
 
 LOGOUT_REDIRECT_URL = '/login/'  # Or the named URL for login if you're using URL names
+LOGIN_REDIRECT_URL = '/farm_list/'
+
+
 
 
 
@@ -134,4 +137,8 @@ USE_TZ = True
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 WEATHER_API_KEY = 'd7b079aab3d762c9a8ad5a6d734ece7e'
+
+ALLOWED_HOSTS = ['127.0.0.1', 'localhost']
+SECURE_SSL_REDIRECT = False  # Ensures no forced redirection to HTTPS
+
 

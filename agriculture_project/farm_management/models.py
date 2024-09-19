@@ -41,9 +41,10 @@ class Farm(models.Model):
     latitude = models.DecimalField(max_digits=8, decimal_places=6, blank=True, null=True)
     longitude = models.DecimalField(max_digits=9, decimal_places=6, blank=True, null=True)
     total_area = models.DecimalField(max_digits=10, decimal_places=2)
-    owner = models.ForeignKey(User, on_delete=models.CASCADE, related_name='farms') 
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='farms') 
     def __str__(self):
         return self.farm_name
+
     
     class Meta:
         verbose_name = 'Farm'
@@ -117,5 +118,22 @@ class Profile(models.Model):
     class Meta:
         ordering = ['user__username']
         verbose_name = 'User Profile'
+        
+class Question(models.Model):
+    question_text = models.TextField()
+    asked_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name='questions')
+    asked_on = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.question_text
+
+class Answer(models.Model):
+    question = models.OneToOneField(Question, on_delete=models.CASCADE, related_name='answer')
+    answer_text = models.TextField()
+    answered_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name='answers')
+    answered_on = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Answer to {self.question.question_text}"
 
     

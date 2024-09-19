@@ -6,8 +6,8 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth import login, authenticate
 from django.contrib.auth.decorators import login_required
 from django.urls import reverse
-from .models import Farm, Crop, WeatherData, Recommendation, Profile
-from .forms import FarmForm, WeatherDataForm, RecommendationForm, RegistrationForm
+from .models import Farm, Crop, WeatherData, Recommendation, Profile, User,Question, Answer
+from .forms import FarmForm, WeatherDataForm, RecommendationForm, RegistrationForm, AnswerForm
 from django.conf import settings
 import requests
 import logging
@@ -20,6 +20,7 @@ from decimal import Decimal
 
 
 def register(request):
+    form = None
     if request.method == 'POST':
         form = RegistrationForm(request.POST)
         if form.is_valid():
@@ -38,8 +39,12 @@ def register(request):
 
             # Auto-login after registration
             login(request, user)
-            return redirect(reverse('farm_list'))
-    else:
+          # Redirect based on user type
+            profile = Profile.objects.get(user=user)
+            if profile.user_type == 1:  # Farmer
+                return redirect(reverse('farm_list'))
+            elif profile.user_type == 2:  # Expert
+                return redirect('ask_expert')
         form = RegistrationForm()
     
     return render(request, 'registration/register.html', {'form': form})
@@ -48,19 +53,34 @@ def register(request):
 def login_view(request):
     if request.method == 'POST':
         form = AuthenticationForm(request, data=request.POST)
-        try:
-            if form.is_valid():
-                user = authenticate(request, username=form.cleaned_data['username'], password=form.cleaned_data['password'])
-                if user is not None:
-                    login(request, user)
-                    logging.info(f"Successful login attempt for user: {user.username}")
-                    return redirect('farm_list')
-                else:
-                    logging.warning("Invalid login attempt")
-        except Exception as e:
-            return render(request, 'registration/login.html', {'form': form, 'error': str(e)})
+        if form.is_valid():
+            user = authenticate(request, username=form.cleaned_data['username'], password=form.cleaned_data['password'])
+            if user is not None:
+                login(request, user)
+                try:
+                    profile = Profile.objects.get(user=user)
+                    # Redirect based on user type
+                    if profile.user_type == 1:  # Farmer
+                        return redirect('farm_list')
+                    elif profile.user_type == 2:  # Expert
+                        return redirect('ask_expert')
+                except Profile.DoesNotExist:
+                    logging.error(f"Profile for user {user.username} does not exist.")
+                    form.add_error(None, "Profile does not exist.")
+            else:
+                form.add_error(None, "Invalid username or password.")
+        else:
+            form.add_error(None, "Invalid form submission.")
     elif request.user.is_authenticated:
-        return redirect('login')
+        try:
+            profile = Profile.objects.get(user=request.user)
+            if profile.user_type == 1:  # Farmer
+                return redirect('farm_list')
+            elif profile.user_type == 2:  # Expert
+                return redirect('ask_expert')
+        except Profile.DoesNotExist:
+            logging.error(f"Profile for user {request.user.username} does not exist.")
+            return redirect('login')  # Redirect to login to avoid unauthorized access
     else:
         form = AuthenticationForm()
 
@@ -69,7 +89,7 @@ def login_view(request):
 @login_required
 def farm_list_view(request):
     query = request.GET.get('q', '') 
-    farms = Farm.objects.filter(owner=request.user)
+    farms = Farm.objects.filter(user=request.user)
     
     paginator = Paginator(farms, 10)  # Show 10 farms per page
     page = request.GET.get('page')
@@ -189,7 +209,7 @@ def add_weather_data(request, farm_id):
         if form.is_valid():
             selected_date = form.cleaned_data['date']
              # Use get_or_create to fetch or create weather data for the selected date
-            weather_data, created = WeatherData.objects.filter(farm=farm, date=selected_date).first()
+            weather_data, created = WeatherData.objects.get_or_create(farm=farm, date=selected_date).first()
             if created:
                 # If created, fetch weather from the API for the selected date
                 weather_info = fetch_weather_data(farm.location, selected_date)
@@ -244,3 +264,54 @@ def fetch_weather_data(location, date=None):
     except requests.exceptions.RequestException as e:
         logging.exception(f"Error occurred during API call: {e}")
         return None
+    
+@login_required
+def ask_expert_view(request):
+    answered_questions = Question.objects.filter(answer__isnull=False)
+    unanswered_questions = Question.objects.filter(answer__isnull=True)
+
+    context = {
+        'answered_questions': answered_questions,
+        'unanswered_questions': unanswered_questions
+    }
+
+    return render(request, 'farm_management/ask_expert.html', context)
+
+@login_required
+def answer_question_view(request, question_id):
+    question = get_object_or_404(Question, id=question_id)
+    
+    if request.method == 'POST':
+        form = AnswerForm(request.POST)
+        if form.is_valid():
+            answer = form.save(commit=False)
+            answer.question = question
+            answer.expert = request.user
+            answer.save()
+
+            # Redirect back to the ask_expert page after answering
+            return redirect('ask_expert')
+    else:
+        form = AnswerForm()
+
+    return render(request, 'ask_expert/answer_question.html', {'form': form, 'question': question})
+
+@login_required
+def edit_farm(request, farm_id):
+    farm = get_object_or_404(Farm, id=farm_id)
+
+    # Ensure that only the farm owner can edit it
+    if request.user != farm.owner:
+        return redirect('farm_list')
+
+    if request.method == 'POST':
+        form = FarmForm(request.POST, instance=farm)
+        if form.is_valid():
+            form.save()
+            return redirect('farm_detail', farm_id=farm.id)
+    else:
+        form = FarmForm(instance=farm)  # Pre-fill the form with existing farm data
+
+    return render(request, 'farm_management/edit_farm.html', {'form': form, 'farm': farm})
+
+

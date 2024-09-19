@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Ask Expert</h2>
+
+    <!-- Unanswered Questions Section -->
+    <div class="unanswered-questions mt-5">
+        <h3>Unanswered Questions</h3>
+        <ul class="list-group">
+            {% if unanswered_questions %}
+                {% for question in unanswered_questions %}
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <span>{{ question.question_text }}</span>
+                        <a href="{% url 'answer_question' question.id %}" class="btn btn-primary">Answer</a>
+                    </li>
+                {% endfor %}
+            {% else %}
+                <li class="list-group-item">No unanswered questions at the moment.</li>
+            {% endif %}
+        </ul>
+    </div>
+
+    <!-- Answered Questions Section -->
+    <div class="answered-questions mt-5">
+        <h3>Answered Questions</h3>
+        <ul class="list-group">
+            {% if answered_questions %}
+                {% for question in answered_questions %}
+                    <li class="list-group-item">
+                        <strong>Question:</strong> {{ question.question_text }}<br>
+                        <strong>Answer:</strong> {{ question.answer.answer_text }}
+                    </li>
+                {% endfor %}
+            {% else %}
+                <li class="list-group-item">No answered questions available.</li>
+            {% endif %}
+        </ul>
+    </div>
+</div>
+{% endblock %}
