@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container">
+    <h1>Expert Profile</h1>
+    
+    <!-- Expert's Name -->
+    <h2>{{ profile.user.first_name }} {{ profile.user.last_name }}</h2>
+
+    <!-- Unanswered Questions -->
+    <h3>Unanswered Questions</h3>
+    <ul>
+        {% if unanswered_questions %}
+            {% for question in unanswered_questions %}
+                <li>
+                    <a href="{% url 'answer_question' question.id %}">
+                        {{ question.question_text }} (Asked by: {{ question.asked_by.username }})
+                    </a>
+                </li>
+            {% endfor %}
+        {% else %}
+            <p>No unanswered questions.</p>
+        {% endif %}
+    </ul>
+
+    <!-- Answered Questions -->
+    <h3>Answered Questions</h3>
+    <ul>
+        {% if answered_questions %}
+            {% for question in answered_questions %}
+                <li>
+                    <a href="{% url 'question_detail' question.id %}">
+                        {{ question.question_text }} (Answered by: {{ question.answer.answered_by.username }})
+                    </a>
+                </li>
+            {% endfor %}
+        {% else %}
+            <p>No answered questions available.</p>
+        {% endif %}
+    </ul>
+</div>
+{% endblock %}

@@ -41,12 +41,10 @@ class Farm(models.Model):
     latitude = models.DecimalField(max_digits=8, decimal_places=6, blank=True, null=True)
     longitude = models.DecimalField(max_digits=9, decimal_places=6, blank=True, null=True)
     total_area = models.DecimalField(max_digits=10, decimal_places=2)
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='farms') 
+    owner = models.ForeignKey(User, on_delete=models.CASCADE, related_name='farms') 
     def __str__(self):
         return self.farm_name
-
-    
-    class Meta:
+class Meta:
         verbose_name = 'Farm'
         verbose_name_plural = 'Farms'
 
@@ -59,13 +57,40 @@ class Crop(models.Model):
         ('Autumn', 'Autumn'),
         ('Winter', 'Winter'),
     ], help_text="Define the growing season of the crop.")
-    ideal_temperature_min = models.DecimalField(max_digits=5, decimal_places=2, default=0, validators=[MinValueValidator(-50), MaxValueValidator(50)], help_text="Enter the minimum ideal temperature for the crop.")
-    ideal_temperature_max = models.DecimalField(max_digits=5, decimal_places=2, default=0, validators=[MinValueValidator(-50), MaxValueValidator(50)], help_text="Enter the maximum ideal temperature for the crop.")
-    ideal_humidity_min = models.DecimalField(max_digits=5, decimal_places=2, default=0, validators=[MinValueValidator(0), MaxValueValidator(100)], help_text="Enter the minimum ideal humidity for the crop.")
-    ideal_humidity_max = models.DecimalField(max_digits=5, decimal_places=2, default=0, validators=[MinValueValidator(0), MaxValueValidator(100)], help_text="Enter the maximum ideal humidity for the crop.")
-    ideal_rainfall_min = models.DecimalField(max_digits=5, decimal_places=2, default=0, validators=[MinValueValidator(0), MaxValueValidator(200)], help_text="Enter the minimum ideal rainfall for the crop.")
-    ideal_rainfall_max = models.DecimalField(max_digits=5, decimal_places=2, default=0, validators=[MinValueValidator(0), MaxValueValidator(200)], help_text="Enter the maximum ideal rainfall for the crop.")
-    preferred_soil_texture = models.CharField(max_length=50, choices=SoilTexture.choices, default=SoilTexture.ANY, help_text="Select the preferred soil texture for the crop.")
+    ideal_temperature_min = models.DecimalField(
+        max_digits=5, decimal_places=2, default=0,
+        validators=[MinValueValidator(-50), MaxValueValidator(50)],
+        help_text="Enter the minimum ideal temperature for the crop."
+    )
+    ideal_temperature_max = models.DecimalField(
+        max_digits=5, decimal_places=2, default=0,
+        validators=[MinValueValidator(-50), MaxValueValidator(50)],
+        help_text="Enter the maximum ideal temperature for the crop."
+    )
+    ideal_humidity_min = models.DecimalField(
+        max_digits=5, decimal_places=2, default=0,
+        validators=[MinValueValidator(0), MaxValueValidator(100)],
+        help_text="Enter the minimum ideal humidity for the crop."
+    )
+    ideal_humidity_max = models.DecimalField(
+        max_digits=5, decimal_places=2, default=0,
+        validators=[MinValueValidator(0), MaxValueValidator(100)],
+        help_text="Enter the maximum ideal humidity for the crop."
+    )
+    ideal_rainfall_min = models.DecimalField(
+        max_digits=5, decimal_places=2, default=0,
+        validators=[MinValueValidator(0), MaxValueValidator(200)],
+        help_text="Enter the minimum ideal rainfall for the crop."
+    )
+    ideal_rainfall_max = models.DecimalField(
+        max_digits=5, decimal_places=2, default=0,
+        validators=[MinValueValidator(0), MaxValueValidator(200)],
+        help_text="Enter the maximum ideal rainfall for the crop."
+    )
+    preferred_soil_texture = models.CharField(
+        max_length=50, choices=SoilTexture.choices, default=SoilTexture.ANY,
+        help_text="Select the preferred soil texture for the crop."
+    )
 
     class Meta:
         verbose_name = 'Crop'
@@ -74,6 +99,8 @@ class Crop(models.Model):
     def __str__(self):
         return self.crop_name
 
+
+# ** Weather Data Model **
 class WeatherData(models.Model):
     farm = models.ForeignKey(Farm, on_delete=models.CASCADE)
     date = models.DateField(auto_now_add=True)
@@ -83,6 +110,14 @@ class WeatherData(models.Model):
 
     def __str__(self):
         return f"{self.farm.farm_name} - {self.date}"
+
+    class Meta:
+        unique_together = ('farm', 'date')
+        verbose_name = 'Weather Data'
+        verbose_name_plural = 'Weather Data'
+
+    def get_absolute_url(self):
+        return reverse('weather_data_detail', args=[str(self.id)])
 
     class Meta:
         unique_together = ('farm', 'date')
@@ -106,7 +141,7 @@ class Profile(models.Model):
         (1, 'Farmer'),
         (2, 'Expert'),
     )
-    user = models.OneToOneField(get_user_model(), on_delete=models.CASCADE)
+    user = models.OneToOneField(get_user_model(), on_delete=models.CASCADE, related_name='profile')
     user_type = models.IntegerField(choices=USER_TYPES)
 
     def __str__(self):
@@ -119,13 +154,16 @@ class Profile(models.Model):
         ordering = ['user__username']
         verbose_name = 'User Profile'
         
+# ** Question & Answer Models (Improved Constraints) **
 class Question(models.Model):
     question_text = models.TextField()
     asked_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name='questions')
     asked_on = models.DateTimeField(auto_now_add=True)
+    response = models.TextField(null=True, blank=True)  # Allowing empty responses
 
     def __str__(self):
         return self.question_text
+
 
 class Answer(models.Model):
     question = models.OneToOneField(Question, on_delete=models.CASCADE, related_name='answer')
@@ -135,5 +173,3 @@ class Answer(models.Model):
 
     def __str__(self):
         return f"Answer to {self.question.question_text}"
-
-    

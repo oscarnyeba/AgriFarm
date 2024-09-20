@@ -19,4 +19,8 @@ urlpatterns = [
     path('farm_list/', views.farm_list_view, name='farm_list'),
     path('farm/add/', views.add_farm, name='add_farm'),
     path('farm/<int:farm_id>/add_weather/', views.add_weather_data, name='add_weather_data'),
+    path('farmer/profile/', views.farmer_profile, name='farmer_profile'),
+    path('expert/profile/', views.expert_profile, name='expert_profile'),
+
+
 ]

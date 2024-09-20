@@ -18,7 +18,7 @@ from decimal import Decimal
 
 
 
-
+#registration view
 def register(request):
     form = None
     if request.method == 'POST':
@@ -26,6 +26,11 @@ def register(request):
         if form.is_valid():
             user = form.save(commit=False)
             user.set_password(form.cleaned_data['password'])
+            
+            # Saving first name, last name, email
+            user.first_name = form.cleaned_data['first_name']
+            user.last_name = form.cleaned_data['last_name']
+            user.email = form.cleaned_data['email']
             user.save()
             
             # Create Profile
@@ -42,13 +47,15 @@ def register(request):
           # Redirect based on user type
             profile = Profile.objects.get(user=user)
             if profile.user_type == 1:  # Farmer
-                return redirect(reverse('farm_list'))
+                return redirect(reverse('farmer_profile'))
             elif profile.user_type == 2:  # Expert
-                return redirect('ask_expert')
-        form = RegistrationForm()
+                return redirect('expert_profile')
+        else:
+            form = RegistrationForm()
     
     return render(request, 'registration/register.html', {'form': form})
 
+#login view
 @csrf_protect
 def login_view(request):
     if request.method == 'POST':
@@ -61,9 +68,9 @@ def login_view(request):
                     profile = Profile.objects.get(user=user)
                     # Redirect based on user type
                     if profile.user_type == 1:  # Farmer
-                        return redirect('farm_list')
+                        return redirect('farmer_profile')
                     elif profile.user_type == 2:  # Expert
-                        return redirect('ask_expert')
+                        return redirect('expert_profile')
                 except Profile.DoesNotExist:
                     logging.error(f"Profile for user {user.username} does not exist.")
                     form.add_error(None, "Profile does not exist.")
@@ -75,21 +82,56 @@ def login_view(request):
         try:
             profile = Profile.objects.get(user=request.user)
             if profile.user_type == 1:  # Farmer
-                return redirect('farm_list')
+                return redirect('farmer_profile')
             elif profile.user_type == 2:  # Expert
-                return redirect('ask_expert')
+                return redirect('expert_profile')
         except Profile.DoesNotExist:
             logging.error(f"Profile for user {request.user.username} does not exist.")
-            return redirect('login')  # Redirect to login to avoid unauthorized access
+            return redirect('login')
     else:
         form = AuthenticationForm()
 
     return render(request, 'registration/login.html', {'form': form})
 
+# ** Farmer Profile Page **
+@login_required
+def farmer_profile(request):
+    """
+    Farmer's profile page with their details (name, photo, farms).
+    """
+    profile = get_object_or_404(Profile, user=request.user)
+    if profile.user_type != 1:  # Only Farmers can access this page
+        return redirect('login')
+    
+    farms = Farm.objects.filter(user=request.user)
+    return render(request, 'farm_management/farmer_profile.html', {
+        'profile': profile,
+        'farms': farms,
+    })
+    
+# ** Expert Profile Page **
+@login_required
+def expert_profile(request):
+    """
+    Expert's profile page with unanswered and answered questions.
+    """
+    profile = get_object_or_404(Profile, user=request.user)
+    if profile.user_type != 2:  # Only Experts can access this page
+        return redirect('login')
+
+    answered_questions = Question.objects.filter(response__isnull=False)
+    unanswered_questions = Question.objects.filter(response__isnull=True)
+
+    return render(request, 'farm_management/expert_profile.html', {
+        'answered_questions': answered_questions,
+        'unanswered_questions': unanswered_questions
+    })
+
+# ** Farm List for Farmers **
 @login_required
 def farm_list_view(request):
     query = request.GET.get('q', '') 
-    farms = Farm.objects.filter(user=request.user)
+    farms = Farm.objects.filter(owner=request.user)
     
     paginator = Paginator(farms, 10)  # Show 10 farms per page
     page = request.GET.get('page')
@@ -181,9 +223,17 @@ def farm_detail(request, farm_id):
         'recommendations': recommendations,
     }
     return render(request, 'farm_management/farm_detail.html', context)
+
+# ** Restrict Farm Creation to Farmers Only **
 @login_required
 @csrf_protect
 def add_farm(request):
+    #Only farmers can add farms. This function handles farm creation.
+    
+    profile = get_object_or_404(Profile, user=request.user)
+    if profile.user_type != 1:  # Only Farmers can add farms
+        return redirect('login')
+
     if request.method == 'POST':
         form = FarmForm(request.POST)
         try:
@@ -267,8 +317,8 @@ def fetch_weather_data(location, date=None):
     
 @login_required
 def ask_expert_view(request):
-    answered_questions = Question.objects.filter(answer__isnull=False)
-    unanswered_questions = Question.objects.filter(answer__isnull=True)
+    answered_questions = Question.objects.filter(response__isnull=False)
+    unanswered_questions = Question.objects.filter(response__isnull=True)
 
     context = {
         'answered_questions': answered_questions,
@@ -277,8 +327,12 @@ def ask_expert_view(request):
 
     return render(request, 'farm_management/ask_expert.html', context)
 
+# ** Expert Answers Questions **
 @login_required
 def answer_question_view(request, question_id):
+    profile = get_object_or_404(Profile, user=request.user)
+    if profile.user_type != 2:  # Only Experts can answer questions
+        return redirect('login')
     question = get_object_or_404(Question, id=question_id)
     
     if request.method == 'POST':
@@ -289,8 +343,8 @@ def answer_question_view(request, question_id):
             answer.expert = request.user
             answer.save()
 
-            # Redirect back to the ask_expert page after answering
-            return redirect('ask_expert')
+            # Redirect back to the expert_profile after answering
+            return redirect('expert_profile')
     else:
         form = AnswerForm()
 

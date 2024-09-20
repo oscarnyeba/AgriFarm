@@ -7,11 +7,6 @@
 <form method="post">
     {% csrf_token %}
     {{ form.as_p }}
-    <label for="user_type">User Type:</label>
-    <select id="user_type" name="user_type">
-        <option value="1">Farmer</option>
-        <option value="2">Expert</option>
-    </select>
     <button type="submit">Login</button>
 </form>
 {% endblock %}
