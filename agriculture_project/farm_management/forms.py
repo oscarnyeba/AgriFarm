@@ -37,3 +37,19 @@ class AnswerForm(forms.ModelForm):
         model = Answer
         fields = ['answer_text']
         
+class LoginForm(forms.Form):
+    username = forms.CharField(
+        max_length=100,
+        widget=forms.TextInput(attrs={
+            'placeholder': 'Username',
+            'class': 'input-field'
+        })
+    )
+    password = forms.CharField(
+        widget=forms.PasswordInput(attrs={
+            'placeholder': 'Password',
+            'class': 'input-field'
+        })
+    )
+
+        

@@ -6,12 +6,12 @@
     <title>{% block title %}Agriculture Optimization{% endblock %}</title>
     {% load static %}
     <link rel="stylesheet" type="text/css" href="{% static 'css/styles.css' %}">
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script src="https://code.jquery.com/ui/1.13.2/jquery-ui.js"></script>
-<link rel="stylesheet" href="https://code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css">
-
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.js"></script>
+    <link rel="stylesheet" href="https://code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css">
 </head>
-<body></body>
+
+<body>
     <nav>
         <ul>
             {% if request.path != '/login/' and request.path != '/register/' %}
@@ -25,11 +25,13 @@
                     <button type="submit" class="logout-button">Logout</button>
                 </form>
             </li>
-            {% else %}
-                <li><a href="{% url 'register' %}">Register</a></li>
             {% endif %}
         </ul>
     </nav>
-    {% block content %}{% endblock %}
+
+    <!-- Block where your form will be injected -->
+    {% block content %}
+    {% endblock %}
+    
 </body>
 </html>

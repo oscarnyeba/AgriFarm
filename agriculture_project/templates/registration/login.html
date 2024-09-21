@@ -1,12 +1,44 @@
 {% extends "base.html" %}
+{% load static %}
+{% block extra_css %}
+<link rel="stylesheet" type="text/css" href="{% static 'css/login.css' %}">
+{% endblock %}
+
+
 
 {% block title %}Login{% endblock %}
 
 {% block content %}
-<h1>Login</h1>
-<form method="post">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit">Login</button>
-</form>
+<div class="login-container">
+    <!-- Left Side: Form Section -->
+    <div class="left-section">
+        <div class="form-container">
+            <img src="{% static 'images/logo.png' %}" alt="Logo" class="logo">
+            <h2>Welcome Back to <span class="brand-name">AgriFarm</span></h2>
+            <form method="post">
+                {% csrf_token %}
+                <!-- Render text input fields, unchanged -->
+                {{ form.as_p }}
+                <div class="form-group">
+                    <div class="checkbox-container">
+                        <input type="checkbox" id="terms" name="terms">
+                        <label for="terms">Remember me</label>
+                    </div>
+                    <a href="#" class="forgot-password">Forgot Password?</a>
+                </div>                
+                <button type="submit" class="btn-signin">Login</button>
+            </form>
+            <div class="signup-prompt">
+                Don't have an account? <a href="{% url 'register' %}">Get Started</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Right Side: Image Section -->
+    <div class="right-section">
+        <img src="{% static 'images/image.jpg' %}" alt="Background Image" class="right-image">
+        <div class="image-overlay">
+        </div>
+    </div>
+</div>
 {% endblock %}

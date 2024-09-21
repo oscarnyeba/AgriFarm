@@ -1,383 +1,160 @@
-/* Base Styles */
+/* General Styles */
 body {
     font-family: 'Arial', sans-serif;
-    background-color: #f9f9f9;
-    color: #333;
+    background-color: #f3f7fe;
     margin: 0;
     padding: 0;
+    height: 100vh;
 }
 
-.container {
-    max-width: 1200px;
-    margin: 0 auto;
+.login-container {
+    display: flex;
+    height: 100vh; /* Full viewport height */
+}
+
+/* Left Section: Form */
+.left-section {
+    width: 50%; /* Adjust this value based on your needs */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #fff;
     padding: 20px;
 }
 
-/* Navigation Bar */
-nav {
-    background-color: #0b6623; /* Dark green */
-    padding: 10px 0;
+.form-container {
+    width: 100%;
+    max-width: 400px;
+    padding: 40px;
+    background-color: #fff;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+    border-radius: 10px;
 }
 
-nav ul {
-    list-style: none;
-    margin: 0;
-    padding: 0;
-    display: flex;
-    justify-content: space-around;
-}
-
-nav ul li {
-    margin: 0 15px;
-}
-
-nav ul li a {
-    color: #fff;
-    text-decoration: none;
-    font-size: 18px;
-    font-weight: bold;
-}
-
-nav ul li a:hover {
-    color: #ffc107; /* Bright highlight color */
-}
-
-/* Headers */
-h1, h2, h3 {
-    color: #0b6623; /* Deep green */
-}
-
-h1 {
-    font-size: 36px;
-    margin-bottom: 20px;
+.logo {
+    display: block;
+    margin: 0 auto 20px;
+    width: 100px;
+    height: auto;
 }
 
 h2 {
-    font-size: 28px;
+    font-size: 1.8rem;
+    color: #333;
+    margin-bottom: 20px;
+}
+
+.brand-name {
+    color: #7B8E46;
+}
+
+.input-container {
     margin-bottom: 15px;
 }
 
-h3 {
-    font-size: 22px;
-    margin-bottom: 10px;
-}
-
-/* Buttons */
-button, .btn {
-    background-color: green; /* Green */
-    border: none;
-    color: white;
-    padding: 10px 20px;
-    font-size: 16px;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-}
-
-button:hover, .btn:hover {
-    background-color: yellowgreen; /* Hover effect */
-}
-
-/* Farm List and Add Farm Links */
-a {
-    color: #0b6623;
-    font-weight: bold;
-    text-decoration: none; /* Remove underline from links */
-}
-
-a:hover {
-    color: #ffc107;
-    text-decoration: underline;
-}
-
-/* Footer */
-footer {
-    background-color: #0b6623;
-    color: white;
-    padding: 20px;
-    text-align: center;
-    margin-top: 50px;
-}
-
-/* Media Queries for Responsiveness */
-@media (max-width: 768px) {
-    .container {
-        padding: 10px;
-    }
-
-    nav ul {
-        flex-direction: column;
-        align-items: center;
-    }
-
-    nav ul li {
-        margin: 10px 0;
-    }
-
-    h1 {
-        font-size: 28px;
-    }
-
-    h2 {
-        font-size: 22px;
-    }
-
-    h3 {
-        font-size: 18px;
-    }
-
-    /* Adjust form and table elements */
-    form {
-        padding: 20px;
-    }
-
-    input,
-    textarea,
-    select,
-    button[type="submit"] {
-        font-size: 14px;
-        padding: 10px;
-    }
-
-    table {
-        font-size: 14px;
-    }
-
-    th, td {
-        padding: 10px;
-    }
-
-    .recommendation-list li {
-        padding: 10px;
-    }
-}
-
-/* General Form Container Styling */
-form {
-    padding: 20px;
-    background-color: #fff;
-    border-radius: 8px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    margin-bottom: 20px; /* Added spacing for form */
-}
-
-/* Ensure consistent styling for all form fields */
-form input[type="text"],
-form input[type="email"],
-form input[type="password"],
-form input[type="number"],
-form textarea,
-form select {
+input {
     width: 100%;
-    max-width: 100%; /* Ensure fields don't exceed the form width */
     padding: 12px;
-    border: 2px solid #ced4da;
+    font-size: 1.1rem;
+    border: 1px solid #ccc;
     border-radius: 5px;
-    font-size: 16px;
-    background-color: #f9f9f9;
-    box-sizing: border-box; /* Include padding and border in width calculation */
-    margin-bottom: 15px; /* Space between fields */
 }
 
-/* Remove extra margin and padding from <p> tags if needed */
-form p {
-    margin: 0;
-    padding: 0;
+/* Placeholder Styling */
+input::placeholder {
+    color: #999; /* Ensure placeholder text is visible */
+    font-size: 1rem;
 }
 
-/* Style for the submit button */
-form button[type="submit"] {
+/* Align Remember Me and Forgot Password */
+.form-group {
+    display: flex;
+    align-items: center; /* Align items vertically */
+    justify-content: space-between; /* Distribute space between items */
+    margin-top: 10px;
+}
+
+.checkbox-container {
+    display: flex;
+    align-items: center; /* Align checkbox and label vertically */
+}
+
+.checkbox-container input[type="checkbox"] {
+    margin-right: 8px; /* Space between checkbox and label */
+}
+
+.forgot-password {
+    color: #007bff; /* Link color */
+    text-decoration: none; /* Remove underline */
+}
+
+.forgot-password:hover {
+    text-decoration: underline; /* Underline on hover */
+}
+
+.btn-signin {
     width: 100%;
-    padding: 12px 20px;
-    font-size: 16px;
-    background-color: #0b6623; /* Deep green */
-    color: white;
+    padding: 12px;
+    background-color: #264226;
     border: none;
     border-radius: 5px;
+    color: #fff;
+    font-size: 1.1rem;
     cursor: pointer;
-    transition: background-color 0.3s ease;
-}
-
-form button[type="submit"]:hover {
-    background-color: #094a1e; /* Darker green on hover */
-}
-
-/* Input Fields */
-form input[type="text"],
-form textarea,
-form select {
-    width: 100%;
-    max-width: 400px;
-    padding: 12px;
-    border: 2px solid #ced4da;
-    border-radius: 5px;
-    font-size: 16px;
-    background-color: #f9f9f9;
-    box-sizing: border-box;
-}
-
-input:focus,
-textarea:focus,
-select:focus {
-    border-color: #0b6623; /* Deep green focus */
-    box-shadow: 0 0 8px rgba(11, 102, 35, 0.2);
-    outline: none;
-}
-
-/* Error Messages */
-.error-message {
-    color: red;
-    font-size: 14px;
-    margin-top: 5px;
-}
-
-/* Invalid Input Styling */
-input:invalid,
-textarea:invalid {
-    border-color: yellowgreen;
-}
-
-input:invalid:focus,
-textarea:invalid:focus {
-    border-color: yellowgreen;
-    box-shadow: 0 0 8px rgba(255, 0, 0, 0.2);
-}
-
-/* General Table Styles */
-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin: 20px 0;
-    font-size: 16px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Subtle shadow */
-}
-
-th, td {
-    padding: 12px 15px;
-    text-align: left;
-    border-bottom: 1px solid #ddd;
-}
-
-th {
-    background-color: #0b6623; /* Deep green */
-    color: white;
-    font-weight: bold;
-}
-
-td {
-    background-color: #f9f9f9; /* Light background */
-    color: #333;
-}
-
-/* Add alternating row colors for better readability */
-tr:nth-child(even) td {
-    background-color: #e9f5e9; /* Light green for even rows */
-}
-
-/* Hover effect for rows */
-tr:hover td {
-    background-color: #d4edda; /* Slightly darker green on hover */
-    cursor: pointer;
-}
-
-/* Ensure responsive tables on mobile */
-@media (max-width: 768px) {
-    table {
-        font-size: 14px;
-    }
-
-    th, td {
-        padding: 10px;
-    }
-}
-
-/* Recommendations List */
-ul.recommendation-list {
-    list-style-type: none;
-    padding: 0;
-    margin: 20px 0;
-}
-
-.recommendation-list li {
-    background-color: #f9f9f9; /* Light background */
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    padding: 15px;
-    margin-bottom: 15px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05); /* Subtle shadow */
-    transition: background-color 0.3s ease, box-shadow 0.3s ease;
-}
-
-.recommendation-list li:hover {
-    background-color: #e9f5e9; /* Light green on hover */
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); /* Slightly stronger shadow */
-}
-
-/* Recommendation Content */
-.recommendation-list strong {
-    color: #0b6623; /* Deep green for date and crop names */
-}
-
-.recommendation-list p {
-    margin: 0;
-    color: #555; /* Slightly darker text */
-}
-
-/* Responsive Design */
-@media (max-width: 768px) {
-    .recommendation-list li {
-        padding: 10px;
-    }
-}
-
-/* Table Styles for Farm Tables */
-.farm-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin: 20px 0;
-    font-size: 16px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Subtle shadow */
-}
-
-.farm-table th, .farm-table td {
-    padding: 12px 15px;
-    text-align: left;
-    border-bottom: 1px solid #ddd;
-}
-
-.farm-table th {
-    background-color: #0b6623; /* Deep green */
-    color: white;
-    font-weight: bold;
-}
-
-.farm-table td {
-    background-color: #f9f9f9; /* Light background */
-    color: #333;
-}
-
-.farm-table tbody tr:nth-child(even) {
-    background-color: #e9f5e9; /* Light green for even rows */
-}
-
-.farm-table tbody tr:hover {
-    background-color: #d4edda; /* Slightly darker green on hover */
-    cursor: pointer;
-}
-
-/* Add some spacing around the button */
-button {
     margin-top: 20px;
 }
 
-/* Remove underline from links in the farm table */
-.farm-table a {
-    text-decoration: none;
-    color: #0b6623;  /* Keep your desired color */
-    font-weight: bold;
+.btn-signin:hover {
+    background-color: #7B8E46;
 }
 
-.farm-table a:hover {
-    text-decoration: underline;
-    color: #ffc107;  /* Optional: Change color on hover */
+/* Button Text Styling */
+.btn-signin {
+    color: #fff; /* Ensure button text is visible */
 }
+
+.signup-prompt {
+    text-align: center;
+    margin-top: 20px;
+}
+
+.signup-prompt a {
+    color: #B3A54D;
+    text-decoration: none;
+}
+
+.signup-prompt a:hover {
+    text-decoration: underline;
+}
+
+/* Right Section: Image Background */
+.right-section {
+    width: 50%; /* Adjust based on your needs */
+    display: flex;
+    align-items: stretch; /* Ensure child (image) stretches to container height */
+    overflow: hidden; /* Hide overflow if the image is larger than container */
+}
+
+.right-image {
+    width: auto; /* Maintain aspect ratio */
+    height: 100%; /* Match the height of the container */
+    object-fit: cover; /* Ensure the image covers the container without distortion */
+}
+
+@media (min-width: 768px) {
+    .right-image {
+        max-width: 800px; /* Adjust max-width for larger screens */
+    }
+}
+
+.left-section, .right-section {
+    flex-grow: 1; /* Ensure sections grow equally to fill the space */
+}
+.form-container {
+    min-width: 300px; /* Ensure form container has a minimum width */
+}
+
+.form-container {
+    border: 2px solid red; /* This will help visually debug layout issues */
+}
+

@@ -23,7 +23,7 @@ from decimal import Decimal
 def register(request):
     form = None
     if request.method == 'POST':
-        form = RegistrationForm(request.POST)
+        form = RegistrationForm(request.POST or None)
         if form.is_valid():
             user = form.save(commit=False)
             user.set_password(form.cleaned_data['password'])
@@ -32,6 +32,8 @@ def register(request):
             user.first_name = form.cleaned_data['first_name']
             user.last_name = form.cleaned_data['last_name']
             user.email = form.cleaned_data['email']
+            user.username = form.cleaned_data['username']
+            user.password = form.cleaned_data['password']
             user.save()
             
             # Create Profile
@@ -104,7 +106,7 @@ def farmer_profile(request):
     if profile.user_type != 1:  # Only Farmers can access this page
         return redirect('login')
     
-    farms = Farm.objects.filter(owner=request.user)
+    farms = Farm.objects.filter(user=request.user)
     return render(request, 'farm_management/farmer_profile.html', {
         'profile': profile,
         'farms': farms,
@@ -132,7 +134,7 @@ def expert_profile(request):
 @login_required
 def farm_list_view(request):
     query = request.GET.get('q', '') 
-    farms = Farm.objects.filter(owner=request.user)
+    farms = Farm.objects.filter(user=request.user)
     
     paginator = Paginator(farms, 10)  # Show 10 farms per page
     page = request.GET.get('page')
@@ -215,12 +217,15 @@ def farm_detail(request, farm_id):
         'humidity': weather_data_today.humidity if weather_data_today else None,
         'rainfall': weather_data_today.rainfall if weather_data_today else None
     }
+    soil_info = fetch_soil_data(farm)  # Use farm's latitude and longitude
+
     recommendations = generate_crop_recommendation(farm, weather_info)
     context = {
         'farm': farm,
         'weather_info': weather_data_today,
         'weather_data': weather_history,
         'recommendations': recommendations,
+        'soil_info': soil_info,
     }
     return render(request, 'farm_management/farm_detail.html', context)
 
@@ -238,10 +243,21 @@ def add_farm(request):
         form = FarmForm(request.POST)
         try:
             if form.is_valid():
+                location = form.cleaned_data['location']  # Get the location from the form
+                latitude, longitude = get_lat_long(location)  # Get lat/long from the location
+                if latitude is None or longitude is None:
+                    # Handle the case where geocoding fails
+                    logging.error("Geocoding failed for location: {}".format(location))
+                    form.add_error('location', 'Unable to fetch latitude and longitude for this location.')
+                    return render(request, 'farm_management/farm_form.html', {'form': form})
+
                 with transaction.atomic():
                     farm = form.save(commit=False)
-                    farm.owner = request.user
-                    form.save()
+                    farm.user = request.user  # Use user instead of owner
+                    farm.latitude = latitude  # Set latitude
+                    farm.longitude = longitude  # Set longitude
+                    farm.save()  # Save the farm instance
+
                 return redirect(reverse('farm_list'))
         except Exception as e:
             logging.error(f"An error occurred while saving the form: {e}")
@@ -269,7 +285,6 @@ def add_weather_data(request, farm_id):
                 weather_data.humidity = weather_info.get('humidity',0)
                 weather_data.rainfall = weather_info.get('rainfall',0)
                 weather_data.save()
-                return redirect('farm_detail', farm_id=farm.id)
             else:
                 form.add_error(None, 'Failed to fetch weather data from the API')  # Custom error message
         else:
@@ -368,4 +383,34 @@ def edit_farm(request, farm_id):
 
     return render(request, 'farm_management/edit_farm.html', {'form': form, 'farm': farm})
 
+def fetch_soil_data(farm):
+    latitude = farm.latitude
+    longitude = farm.longitude
 
+    if latitude is None or longitude is None:
+        logging.error("Invalid farm location: Latitude or Longitude is None")
+        return None  # Handle this case as needed
+
+    api_url = f"https://rest.soilgrids.org/query?lon={longitude}&lat={latitude}"
+    try:
+        response = requests.get(api_url)
+        response.raise_for_status()  # Raise an error for bad responses
+        soil_data = response.json()
+        return soil_data
+    except requests.exceptions.RequestException as e:
+        logging.error(f"Error fetching soil data: {e}")
+        return None
+
+def get_lat_long(location):
+    api_key = 'fUGmuIV8sR29zXoZIeku'  # Replace with your actual MapTiler API key
+    url = f'https://api.maptiler.com/geocoding/{location}.json?key={api_key}'
+    
+    response = requests.get(url)
+    
+    if response.status_code == 200:
+        results = response.json()
+        if results['features']:
+            lat = results['features'][0]['geometry']['coordinates'][1]  # Latitude
+            lng = results['features'][0]['geometry']['coordinates'][0]  # Longitude
+            return lat, lng
+    return None, None  # Return None if no results fou
