@@ -6,7 +6,7 @@
     <h1>{{ farm.farm_name }}</h1>
     <p>Location: {{ farm.location }}</p>
     <p>Total Area: {{ farm.total_area }} hectares</p>
-    {% if request.user == farm.owner %}
+    {% if request.user == farm.user %}
     <a href="{% url 'edit_farm' farm.id %}" class="btn btn-primary mb-3">Edit Farm</a>
 {% endif %}
 

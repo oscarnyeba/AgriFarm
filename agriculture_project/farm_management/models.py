@@ -41,7 +41,7 @@ class Farm(models.Model):
     latitude = models.DecimalField(max_digits=8, decimal_places=6, blank=True, null=True)
     longitude = models.DecimalField(max_digits=9, decimal_places=6, blank=True, null=True)
     total_area = models.DecimalField(max_digits=10, decimal_places=2)
-    owner = models.ForeignKey(User, on_delete=models.CASCADE, related_name='farms') 
+    user = models.ForeignKey(User, on_delete=models.CASCADE) 
     def __str__(self):
         return self.farm_name
 class Meta:
@@ -119,13 +119,6 @@ class WeatherData(models.Model):
     def get_absolute_url(self):
         return reverse('weather_data_detail', args=[str(self.id)])
 
-    class Meta:
-        unique_together = ('farm', 'date')
-        verbose_name = 'Weather Data'
-        verbose_name_plural = 'Weather Data'
-
-    def get_absolute_url(self):
-        return reverse('weather_data_detail', args=[str(self.id)])
 
 class Recommendation(models.Model):
     farm = models.ForeignKey(Farm, on_delete=models.CASCADE)

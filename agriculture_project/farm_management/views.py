@@ -5,6 +5,7 @@ from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth import login, authenticate
 from django.contrib.auth.decorators import login_required
+from .decorators import farm_owner_required
 from django.urls import reverse
 from .models import Farm, Crop, WeatherData, Recommendation, Profile, User,Question, Answer
 from .forms import FarmForm, WeatherDataForm, RecommendationForm, RegistrationForm, AnswerForm
@@ -103,7 +104,7 @@ def farmer_profile(request):
     if profile.user_type != 1:  # Only Farmers can access this page
         return redirect('login')
     
-    farms = Farm.objects.filter(user=request.user)
+    farms = Farm.objects.filter(owner=request.user)
     return render(request, 'farm_management/farmer_profile.html', {
         'profile': profile,
         'farms': farms,
@@ -176,14 +177,13 @@ def generate_crop_recommendation(farm, weather_info):
         return []
 
 
-
+@farm_owner_required
 @login_required
 def farm_detail(request, farm_id):
-    farm = get_object_or_404(Farm.objects.prefetch_related('weatherdata_set'), id=farm_id)
+    logging.debug(f"Requesting farm detail for farm_id: {farm_id} and user: {request.user.username}")
+    farm = get_object_or_404(Farm.objects.prefetch_related('weatherdata_set'), id=farm_id, user=request.user)
+    logging.debug(f"Farm Owner: {farm.user.username}")
     today = datetime.now().date()
-    if request.user != farm.owner:
-        # Optionally, you can raise a permission denied error or redirect
-        return redirect('farm_list')
     def fetch_or_update_weather_data(farm, date):
         weather_data_today = WeatherData.objects.filter(farm=farm, date=date).first()
 
@@ -355,7 +355,7 @@ def edit_farm(request, farm_id):
     farm = get_object_or_404(Farm, id=farm_id)
 
     # Ensure that only the farm owner can edit it
-    if request.user != farm.owner:
+    if request.user != farm.user:
         return redirect('farm_list')
 
     if request.method == 'POST':
