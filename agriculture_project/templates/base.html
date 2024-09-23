@@ -7,15 +7,12 @@
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.js"></script>
     <link rel="stylesheet" href="https://code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css">
+    {% block css%}{% endblock %}
 </head>
-
 <body>
     <nav>
         <ul>
-            {% if request.path != '/login/' and request.path != '/register/' %}
-            <li><a href="{% url 'farm_list' %}">Farms</a></li>
-            <li><a href="{% url 'add_farm' %}">Add Farm</a></li>
-            {% endif %}
+            {% if request.path != '/login/' and request.path != '/register/' %}            {% endif %}
             {% if user.is_authenticated %}
             <li class="logout-form">
                 <form method="post" action="{% url 'logout' %}">

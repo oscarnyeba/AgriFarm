@@ -1,37 +1,60 @@
 {% extends "base.html" %}
+{% load static %}
+{% block css %}
+<link rel="stylesheet" type="text/css" href="{% static 'css/farmer_profile.css' %}">
+{% endblock %}
 
 {% block title %}Farm List{% endblock %}
 
 {% block content %}
-    <h1>Farms</h1>
-
-    <!-- Search Form -->
-    <form method="GET" action=".">
-        {% csrf_token %}
-        <input type="text" name="q" placeholder="Search farms by name..." value="{{ request.GET.q }}">
-    </form>
-
-    <table class="farm-table">
-        <thead>
-            <tr>
-                <th>Farm Name</th>
-                <th>Location</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for farm in farms %}
-                <tr>
-                    <td><a href="{% url 'farm_detail' farm.id %}">{{ farm.farm_name }}</a></td>
-                    <td>{{ farm.location }}</td>
-                </tr>
-            {% empty %}
-                <tr>
-                    <td colspan="2">No farms found.</td>
-                </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+<!-- Full container -->
+<div class="container">
+    <!-- Left Side: Logo and buttons -->
+    <header class="left-section">
+        <img src="{% static 'images/logo.png' %}" alt="Company Logo" class="logo">
+        <ul class="menu">
+            <li><a href="{% url 'ask_expert' %}" class="btn ask-expert-btn">Ask Expert</a></li>
+            <li><a href="{% url 'login' %}" class="btn logout-btn">Logout</a></li>
+        </ul>
+    </header>
     
-    <button type="button" onclick="location.href='{% url 'add_farm' %}'">Add New Farm</button>
-    
+    <!-- Right Side: Farms list and search -->
+    <main class="right-section">
+        <h1 class="center-heading">AgriFarm</h1>
+        
+        <!-- Search Form -->
+        <form method="GET" action=".">
+            <div class="search-container">
+                <input type="text" name="q" placeholder="Search.." class="search-input" value="{{ query }}" aria-label="Search farms">
+                <button type="submit" class="search-btn" aria-label="Submit search">
+                    <img src="{% static 'images/search.png' %}" alt="Search Icon">
+                </button>
+            </div>
+        </form>        
+        
+        <!-- Farms Table -->
+        <table class="farm-table">
+            <thead>
+                <tr>
+                    <th>Farm Name</th>
+                    <th>Location</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for farm in farms %}
+                    <tr>
+                        <td><a href="{% url 'farm_detail' farm.id %}">{{ farm.farm_name }}</a></td>
+                        <td>{{ farm.location }}</td>
+                    </tr>
+                {% empty %}
+                    <tr>
+                        <td colspan="2">No farms found.</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        
+        <button type="button" onclick="location.href='{% url 'add_farm' %}'" class="add-farm-btn">Add New Farm</button>
+    </main>
+</div>
 {% endblock %}

@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% load static %}
 
-{% block head %}
+{% block css %}
     <link rel="stylesheet" type="text/css" href="{% static 'css/register.css' %}">
 {% endblock %}
 
@@ -11,20 +11,26 @@
     <div class="left-section">
         <div class="form-container">
             <img src="{% static 'images/logo.png' %}" alt="Logo" class="logo">
-            <h2 class="brand-name">Register</h2>
             <form method="post">
                 {% csrf_token %}
+                
                 {{ form.as_p }}  <!-- This renders all form fields automatically -->
 
                 <!-- Submit Button -->
                 <button type="submit" class="btn-signin">Register</button>
             </form>
+             <!-- Login Redirect Link -->
+             <div class="login-redirect">
+                <p>Already have an account? 
+                    <a href="{% url 'login' %}" class="btn-login">Log in</a>
+                </p>
+            </div>
         </div>
     </div>
 
     <!-- Right Section: Image Background -->
     <div class="right-section">
-        <img src="{% static 'images/register.png' %}" alt="Background Image" class="right-image">
+        <img src="{% static 'images/register.jpg' %}" alt="Background Image" class="right-image">
     </div>
 </div>
 {% endblock %}

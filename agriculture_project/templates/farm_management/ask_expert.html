@@ -1,4 +1,8 @@
 {% extends "base.html" %}
+{% block css %}
+{%load static%}
+<link rel="stylesheet" type="text/css" href="{% static 'css/farmer_profile.css' %}">
+{% endblock %}
 
 {% block content %}
 <div class="container mt-4">

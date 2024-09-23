@@ -1,0 +1,167 @@
+.container {
+    display: flex;
+    justify-content: space-between;
+    align-items: stretch; /* Make left and right sections stretch to equal height */
+    height: 100vh;
+}
+
+.left-section {
+    background-color: #f4f5f7;
+    padding: 20px;
+    width: 25%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    flex-grow: 1; /* Allow it to grow as needed */
+}
+
+.left-section .logo {
+    max-width: 120px;
+    margin-bottom: 40px;
+}
+
+.left-section .menu {
+    list-style: none;
+    padding: 0;
+    width: 100%;
+    text-align: center;
+}
+
+.left-section .menu li {
+    margin-bottom: 20px;
+}
+
+.btn, .add-farm-btn {
+    padding: 10px 15px;
+    background-color: #264226;
+    color: white;
+    text-decoration: none;
+    border-radius: 5px;
+    font-size: 16px;
+    display: block;
+    text-align: center;
+}
+
+.btn:hover, .add-farm-btn:hover {
+    background-color:  #7B8E46;
+}
+
+.right-section {
+    width: 70%;
+    padding: 20px;
+    background-color: #fff;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start; /* Align items to the left */
+    height: 100vh; /* Match the height of the left section */
+}
+
+.search-container {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start; /* Align items to the left */
+    width: 100%; /* Full width */
+    max-width: 500px; /* Adjust max width as needed */
+    margin-bottom: 20px; /* Space between search and table */
+    border-radius: 25px;
+    background-color: #fff; /* White background */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Light shadow */
+}
+
+.search-input {
+    flex: 1; /* Allows input to take remaining space */
+    border: none;
+    padding: 10px 15px;
+    border-radius: 25px 0 0 25px; /* Rounded corners on the left */
+    outline: none;
+    font-size: 16px;
+}
+
+.search-btn {
+    background-color: #264226; /* Green background for the button */
+    border: none;
+    padding: 10px 20px;
+    border-radius: 0 25px 25px 0; /* Rounded corners on the right */
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.search-btn img {
+    width: 20px;
+    height: 20px;
+}
+
+.search-btn:hover {
+    background-color: #264226;
+}
+
+.farm-table {
+    width: 100%; /* Full width for responsiveness */
+    border-collapse: collapse;
+    text-align: left;
+    border-radius: 10px; /* Rounded corners for the table */
+    overflow: hidden; /* Hide overflow for rounded corners */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Light shadow */
+}
+.farm-table td {
+    border: 1px solid #ddd;
+    padding: 10px;
+    font-weight: bold; /* Make text bold */
+}
+
+.farm-table th, .farm-table td {
+    border: 1px solid #ddd;
+    padding: 10px;
+}
+
+.farm-table td {
+    border: 1px solid #ddd;
+    padding: 10px;
+    font-weight: bold; /* Make text bold */
+}
+
+.farm-table tr:nth-child(even) {
+    background-color: #f9f9f9; /* Light background for even rows */
+}
+
+.farm-table tr:hover {
+    background-color:  #f2f2f2; /* Light grey background on hover */
+}
+
+.add-farm-btn {
+    background-color: #264226;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    cursor: pointer;
+    border-radius: 5px;
+    font-size: 16px;
+    margin-top: 20px; /* Add margin to create space */
+    width: 50%;  /* Ensure button aligns with the table width */
+    text-align: center;
+}
+
+.center-heading {
+    text-align: center; /* Center the text */
+    margin: 20px 0; /* Add some margin above and below */
+    color: #7B8E46
+}
+
+.farm-table a {
+    text-decoration: none; /* Remove underline from links */
+    color: #7B8E46; /* Set a color for the links */
+}
+
+.farm-table a:hover {
+    text-decoration: underline; /* Optional: Add underline on hover */
+    color: #7B8E46; /* Darker color on hover */
+}
+.farm-table th {
+    background-color: #f2f2f2; /* Light grey background for header */
+    font-weight: bold; /* Make header text bold */
+    font-size: 1.5em; /* Increase font size */
+    padding: 15px; /* Add some padding for a better look */
+    color: #264226;
+}

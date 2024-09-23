@@ -127,19 +127,7 @@ input::placeholder {
     text-decoration: underline;
 }
 
-/* Right Section: Image Background */
-.right-section {
-    width: 50%; /* Adjust based on your needs */
-    display: flex;
-    align-items: stretch; /* Ensure child (image) stretches to container height */
-    overflow: hidden; /* Hide overflow if the image is larger than container */
-}
 
-.right-image {
-    width: auto; /* Maintain aspect ratio */
-    height: 100%; /* Match the height of the container */
-    object-fit: cover; /* Ensure the image covers the container without distortion */
-}
 
 @media (min-width: 768px) {
     .right-image {
@@ -152,9 +140,41 @@ input::placeholder {
 }
 .form-container {
     min-width: 300px; /* Ensure form container has a minimum width */
+    width: 100%;
+    max-width: 600px; /* Increase this value to make the form container larger */
+    padding: 40px;
+    background-color: #fff;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+    border-radius: 10px;
 }
 
 .form-container {
-    border: 2px solid red; /* This will help visually debug layout issues */
+    border: 2px green; /* This will help visually debug layout issues */
 }
 
+.login-redirect {
+    text-align: center;
+    margin-top: 15px;
+}
+
+.login-redirect a {
+    color: #007bff;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+.login-redirect a:hover {
+    text-decoration: underline;
+}
+.right-section {
+    width: 50%; /* Adjust based on your needs */
+    display: flex;
+    align-items: stretch; /* Stretch the child (image) to fill the container */
+    overflow: hidden; /* Hide overflow if the image is larger than container */
+}
+
+.right-image {
+    width: 100%; /* Make the image fill the width */
+    height: 100%; /* Make the image fill the height of the container */
+    object-fit: cover; /* Ensure the image covers the container without distortion */
+}

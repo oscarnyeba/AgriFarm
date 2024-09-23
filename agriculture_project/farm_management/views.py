@@ -3,7 +3,7 @@ from django.db.models import Q
 import logging
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.shortcuts import render, get_object_or_404, redirect
-from django.contrib.auth import login, authenticate
+from django.contrib.auth import login, authenticate,logout
 from django.contrib.auth.decorators import login_required
 from .decorators import farm_owner_required
 from django.urls import reverse
@@ -21,19 +21,16 @@ from decimal import Decimal
 
 #registration view
 def register(request):
-    form = None
+    form = RegistrationForm() 
     if request.method == 'POST':
-        form = RegistrationForm(request.POST or None)
+        form = RegistrationForm(request.POST)
         if form.is_valid():
             user = form.save(commit=False)
             user.set_password(form.cleaned_data['password'])
-            
-            # Saving first name, last name, email
             user.first_name = form.cleaned_data['first_name']
             user.last_name = form.cleaned_data['last_name']
             user.email = form.cleaned_data['email']
             user.username = form.cleaned_data['username']
-            user.password = form.cleaned_data['password']
             user.save()
             
             # Create Profile
@@ -50,14 +47,14 @@ def register(request):
           # Redirect based on user type
             profile = Profile.objects.get(user=user)
             if profile.user_type == 1:  # Farmer
-                return redirect(reverse('farmer_profile'))
+                return redirect(reverse('farm_list'))
             elif profile.user_type == 2:  # Expert
                 return redirect('expert_profile')
-        else:
-            form = RegistrationForm()
     
     return render(request, 'registration/register.html', {'form': form})
-
+def logout_view(request):
+    logout(request)
+    return redirect('login')
 #login view
 @csrf_protect
 def login_view(request):
@@ -71,7 +68,7 @@ def login_view(request):
                     profile = Profile.objects.get(user=user)
                     # Redirect based on user type
                     if profile.user_type == 1:  # Farmer
-                        return redirect('farmer_profile')
+                        return redirect('farm_list')
                     elif profile.user_type == 2:  # Expert
                         return redirect('expert_profile')
                 except Profile.DoesNotExist:
@@ -107,7 +104,7 @@ def farmer_profile(request):
         return redirect('login')
     
     farms = Farm.objects.filter(user=request.user)
-    return render(request, 'farm_management/farmer_profile.html', {
+    return render(request, 'farm_management/farm_list.html', {
         'profile': profile,
         'farms': farms,
     })
@@ -413,4 +410,20 @@ def get_lat_long(location):
             lat = results['features'][0]['geometry']['coordinates'][1]  # Latitude
             lng = results['features'][0]['geometry']['coordinates'][0]  # Longitude
             return lat, lng
-    return None, None  # Return None if no results fou
+    return None, None 
+
+@login_required
+def edit_profile(request):
+    user = request.user
+    if request.method == 'POST':
+        first_name = request.POST.get('first_name')
+        last_name = request.POST.get('last_name')
+        email = request.POST.get('email')
+
+        user.first_name = first_name
+        user.last_name = last_name
+        user.email = email
+        user.save()
+
+        return redirect('farm_list')  # Redirect back to the profile page
+    return render(request, 'farm_management/edit_profile.html', {'user': user})
