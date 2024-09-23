@@ -132,6 +132,8 @@ def expert_profile(request):
 def farm_list_view(request):
     query = request.GET.get('q', '') 
     farms = Farm.objects.filter(user=request.user)
+    if query:
+        farms = farms.filter(farm_name__icontains=query)
     
     paginator = Paginator(farms, 10)  # Show 10 farms per page
     page = request.GET.get('page')
@@ -142,7 +144,7 @@ def farm_list_view(request):
     except EmptyPage:
         farms = paginator.page(paginator.num_pages)
 
-    return render(request, 'farm_management/farm_list.html', {'farms': farms})
+    return render(request, 'farm_management/farm_list.html', {'farms': farms, 'query': query})
 
 @login_required
 def generate_crop_recommendation(farm, weather_info):
@@ -424,6 +426,5 @@ def edit_profile(request):
         user.last_name = last_name
         user.email = email
         user.save()
-
         return redirect('farm_list')  # Redirect back to the profile page
     return render(request, 'farm_management/edit_profile.html', {'user': user})

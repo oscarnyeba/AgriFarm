@@ -13,8 +13,17 @@
     <header class="left-section">
         <img src="{% static 'images/logo.png' %}" alt="Company Logo" class="logo">
         <ul class="menu">
-            <li><a href="{% url 'ask_expert' %}" class="btn ask-expert-btn">Ask Expert</a></li>
-            <li><a href="{% url 'login' %}" class="btn logout-btn">Logout</a></li>
+            {% if request.path != '/login/' and request.path != '/register/' %}            {% endif %}
+            {% if user.is_authenticated %}
+            <li class="logout-form">
+                <form method="post" action="{% url 'logout' %}">
+                    {% csrf_token %}
+                    <button type="submit" class="btn ask-expert-btn " style="display: block; width: 100%;">Logout</button>
+                </form>
+                <li><a href="{% url 'ask_expert' %}" class="btn ask-expert-btn">Ask Expert</a></li>
+
+            </li>
+            {% endif %}
         </ul>
     </header>
     

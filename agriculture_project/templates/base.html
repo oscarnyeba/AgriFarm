@@ -9,21 +9,8 @@
     <link rel="stylesheet" href="https://code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css">
     {% block css%}{% endblock %}
 </head>
-<body>
-    <nav>
-        <ul>
-            {% if request.path != '/login/' and request.path != '/register/' %}            {% endif %}
-            {% if user.is_authenticated %}
-            <li class="logout-form">
-                <form method="post" action="{% url 'logout' %}">
-                    {% csrf_token %}
-                    <button type="submit" class="logout-button">Logout</button>
-                </form>
-            </li>
-            {% endif %}
-        </ul>
+<body> 
     </nav>
-
     <!-- Block where your form will be injected -->
     {% block content %}
     {% endblock %}
