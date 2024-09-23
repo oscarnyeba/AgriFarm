@@ -1,0 +1,177 @@
+/* General Styles */
+.farm-details-container {
+    display: flex;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+    font-family: Arial, sans-serif;
+
+}
+
+/* Left Section */
+.left-section {
+    width: 25%;
+    background-color: #f7f7f7;
+    padding: 20px;
+    border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+}
+
+/* Do not change the logo shape */
+.farm-logo img {
+    width: 120px;
+    height: auto;
+}
+
+.farm-info {
+    text-align: center;
+    margin: 10px 0 20px;
+}
+
+.farm-info h1 {
+    font-size: 22px;
+    color: #333;
+    margin-bottom: 5px;
+    font-weight: bold;
+}
+
+.farm-info p {
+    font-size: 14px;
+    color: #666;
+}
+
+/* Farm Actions (Edit, Ask Expert, Logout) */
+.farm-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 10px;
+    width: 100%; /* Ensure the container takes full width */
+}
+
+.farm-actions .btn {
+    display: block;
+    width: 100%; /* Buttons will take the full width of the parent container */
+    padding: 15px; /* Increase padding for a more balanced look */
+    border-radius: 8px;
+    text-align: center;
+    text-decoration: none;
+    font-size: 16px; /* Consistent text size */
+    font-weight: bold;
+    box-sizing: border-box; /* Ensure padding is included in width calculation */
+}
+
+.btn-edit, .btn-expert, .btn-danger {
+    color: white;
+    background-color: #264226; /* Logo color theme */
+    border: none;
+}
+
+.btn-edit:hover, .btn-expert:hover, .btn-danger:hover {
+    background-color: #264226; /* Darker hover effect */
+}
+
+
+/* Right Section */
+.right-section {
+    width: 70%;
+    margin-left: 20px;
+    display: flex;
+    flex-direction: column;
+}
+
+.info-box {
+    background-color: #fff5f5;
+    padding: 20px;
+    margin-bottom: 20px;
+    border-radius: 8px;
+}
+
+.info-box h2 {
+    margin-bottom: 10px;
+    color: #333;
+}
+
+/* Weather Tables */
+.weather-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 20px 0;
+}
+
+.weather-table th, .weather-table td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: center;
+}
+
+.weather-table th {
+    background-color: #f9f9f9;
+    color: #333;
+}
+
+.weather-table tr:nth-child(even) {
+    background-color: #f9f9f9;
+}
+
+.weather-table tr:hover {
+    background-color: #f1f1f1;
+}
+
+.current-weather, .weather-history {
+    background-color: #f9f9f9;
+}
+
+/* Soil and Crops Layout */
+.soil-crop-info-section {
+    display: flex;
+    justify-content: space-between;
+    gap: 20px; /* Space between soil and recommended crops */
+}
+
+.soil-info, .recommended-crops {
+    width: 48%;
+    background-color: #f9f9f9;
+
+}
+
+.recommended-crops ul {
+    list-style-type: none;
+    padding-left: 0;
+}
+
+.recommended-crops li {
+    margin-bottom: 5px;
+}
+/* Location and Land Size */
+.farm-details p {
+    font-size: 18px; /* Increase font size */
+    font-weight: bold; /* Make the text bold for better visibility */
+    margin: 10px 0; /* Add some spacing between location and size */
+    color: #333; /* Darker color for better contrast */
+}
+
+.farm-details h1 {
+    font-size: 24px; /* Make the farm name larger */
+    font-weight: bold;
+    color: #333; /* Matching color for consistency */
+}
+
+/* Optionally, if you want more control over specific elements */
+.farm-location {
+    font-size: 20px; /* Larger font size for location */
+    font-weight: bold; 
+    color: #333;
+}
+
+.farm-size {
+    font-size: 20px; /* Larger font size for farm size */
+    font-weight: bold;
+    color: #333;
+}
+body {
+    color: green; /* Set all text to green */
+}

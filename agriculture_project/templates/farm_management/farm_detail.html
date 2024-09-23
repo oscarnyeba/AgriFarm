@@ -1,98 +1,111 @@
 {% extends "base.html" %}
-
+{% load static %}
+{% block css %}
+<link rel="stylesheet" type="text/css" href="{% static 'css/farm_details.css' %}">
+{% endblock %}
 {% block title %}{{ farm.farm_name }}{% endblock %}
 
 {% block content %}
-    <h1>{{ farm.farm_name }}</h1>
-    <p>Location: {{ farm.location }}</p>
-    <p>Total Area: {{ farm.total_area }} hectares</p>
-    {% if request.user == farm.user %}
-        <a href="{% url 'edit_farm' farm.id %}" class="btn btn-primary mb-3">Edit Farm</a>
-    {% endif %}
+<div class="farm-details-container">
+    <!-- Left Section: Farm Info and Actions -->
+    <div class="left-section">
+        <div class="farm-logo">
+            <img src="{% static 'images/logo.png' %}" alt="Farm Logo">
+        </div>
+        <div class="farm-details">
+            <h1>{{ farm.farm_name }}</h1>
+            <p>Location: {{ farm.location }}</p>
+            <p>Total Land: {{ farm.total_area }} acres</p>
+        </div>
+        <div class="farm-actions">
+            <a href="{% url 'edit_farm' farm.id %}" class="btn btn-edit">Edit Farm details</a>
+            <a href="{% url 'ask_expert' %}" class="btn btn-expert">Ask Expert</a>
+            <a href="{% url 'farm_list' %}" class="btn btn-expert">Farms</a>
+            <form method="post" action="{% url 'logout' %}">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-danger">Logout</button>
+            </form>
+        </div>
+    </div>
 
-    <!-- Weather Data Section -->
-    <h2>Current Weather Data for {{ farm.location }}</h2>
-    {% if weather_info %}
-        <table class="table table-striped">
-            <thead>
-                <tr>
-                    <th>Date</th>
-                    <th>Temperature (°C)</th>
-                    <th>Humidity (%)</th>
-                    <th>Rainfall (mm)</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td>{{ today }}</td>  <!-- Ensure today is defined in the view -->
-                    <td>{{ weather_info.temperature }}</td>
-                    <td>{{ weather_info.humidity }}</td>
-                    <td>{{ weather_info.rainfall }}</td>
-                </tr>
-            </tbody>
-        </table>
-    {% else %}
-        <p>No current weather data available.</p>
-    {% endif %}
-    <a href="{% url 'add_weather_data' farm.id %}" class="btn btn-success">Add Weather Data</a>
+    <!-- Right Section: Weather, Soil, and Crops Info -->
+    <div class="right-section">
+        <!-- Current Weather Section -->
+        <div class="info-box current-weather">
+            <h2>Current Weather</h2>
+            {% if weather_info %}
+            <table class="weather-table">
+                <thead>
+                    <tr>
+                        <th>Rainfall (mm)</th>
+                        <th>Humidity (%)</th>
+                        <th>Temperature (°C)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>{{ weather_info.rainfall }}</td>
+                        <td>{{ weather_info.humidity }}</td>
+                        <td>{{ weather_info.temperature }}</td>
+                    </tr>
+                </tbody>
+            </table>
+            {% else %}
+                <p>No current weather data available.</p>
+            {% endif %}
+        </div>
 
-    <!-- Historical Weather Data Section -->
-    <h2>Weather History</h2>
-    {% if weather_data %}
-        <table class="table table-striped">
-            <thead>
-                <tr>
-                    <th>Date</th>
-                    <th>Temperature (°C)</th>
-                    <th>Humidity (%)</th>
-                    <th>Rainfall (mm)</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for data in weather_data %}
+        <!-- Weather History Section -->
+        <div class="info-box weather-history">
+            <h2>Weather History</h2>
+            {% if weather_data %}
+            <table class="weather-table">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Rainfall (mm)</th>
+                        <th>Humidity (%)</th>
+                        <th>Temperature (°C)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for data in weather_data %}
                     <tr>
                         <td>{{ data.date }}</td>
-                        <td>{{ data.temperature }}</td>
-                        <td>{{ data.humidity }}</td>
                         <td>{{ data.rainfall }}</td>
+                        <td>{{ data.humidity }}</td>
+                        <td>{{ data.temperature }}</td>
                     </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    {% else %}
-        <p>No historical weather data available.</p>
-    {% endif %}
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+                <p>No weather history data available.</p>
+            {% endif %}
+        </div>
 
-    <!-- Recommendations Section -->
-    <h2>Recommended Crops Based on Current Weather</h2>
-    {% if recommendations %}
-        <ul>
-            {% for crop in recommendations %}
-                <li>{{ crop.crop_name }} - Suitable for current conditions</li>
-            {% endfor %}
-        </ul>
-    {% else %}
-        <p>No crops recommended based on current weather conditions. Please check back later or adjust the farm conditions.</p>
-    {% endif %}
+        <!-- Soil and Recommended Crops Information -->
+        <div class="soil-crop-info-section">
+            <div class="info-box soil-info">
+                <h2>Soil Information</h2>
+                {% if soil_info %}
+                    <p>Soil Type: {{ soil_info.type }}</p>
+                    <p>pH Level: {{ soil_info.ph_level }}</p>
+                    <p>Nutrient Content: {{ soil_info.nutrient_content }}</p>
+                {% else %}
+                    <p>No soil data available.</p>
+                {% endif %}
+            </div>
 
-    <!-- Soil Information Section -->
-    <h2>Soil Information</h2>
-    {% if soil_info %}
-        <h3>Soil Types</h3>
-        <ul>
-            {% for type, details in soil_info.soil_types.items %}
-                <li>{{ type }}: {{ details }}</li>
-            {% endfor %}
-        </ul>
-
-        <h3>Soil Properties</h3>
-        <ul>
-            {% for property, value in soil_info.soil_properties.items %}
-                <li>{{ property }}: {{ value }}</li>
-            {% endfor %}
-        </ul>
-    {% else %}
-        <p>No soil data available for this location.</p>
-    {% endif %}
-
+            <div class="info-box recommended-crops">
+                <h2>Recommended Crops</h2>
+                <ul>
+                    {% for crop in recommendations %}
+                        <li>{{ crop }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}
