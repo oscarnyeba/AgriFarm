@@ -104,9 +104,21 @@ class Crop(models.Model):
 class WeatherData(models.Model):
     farm = models.ForeignKey(Farm, on_delete=models.CASCADE)
     date = models.DateField(auto_now_add=True)
-    temperature = models.FloatField()
-    humidity = models.FloatField()
-    rainfall = models.FloatField()
+    temperature = models.FloatField(default=0)
+    feels_like = models.FloatField(default=0)
+    temp_min = models.FloatField(default=0)
+    temp_max = models.FloatField(default=0)
+    pressure = models.FloatField(default=0)
+    humidity = models.FloatField(default=0)
+    sea_level = models.FloatField(null=True, blank=True)  # Nullable for cases when sea_level is missing
+    grnd_level = models.FloatField(null=True, blank=True)  # Nullable for cases when grnd_level is missing
+    visibility = models.FloatField(null=True, blank=True)
+    wind_speed = models.FloatField(default=0)
+    wind_direction = models.FloatField(default=0)
+    wind_gust = models.FloatField(null=True, blank=True)
+    cloudiness = models.FloatField(default=0)
+    rainfall = models.FloatField(null=True, blank=True)  # Since rain data is not always available
+    
 
     def __str__(self):
         return f"{self.farm.farm_name} - {self.date}"
@@ -166,3 +178,66 @@ class Answer(models.Model):
 
     def __str__(self):
         return f"Answer to {self.question.question_text}"
+    
+class Alert(models.Model):
+    farm = models.ForeignKey(Farm, on_delete=models.CASCADE, related_name='alerts')
+    message = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Alert for {self.farm.farm_name}: {self.message[:50]}..."
+
+    class Meta:
+        ordering = ['-created_at']
+
+class CropRotation(models.Model):
+    farm = models.ForeignKey(Farm, on_delete=models.CASCADE, related_name='crop_rotations')
+    crop = models.ForeignKey(Crop, on_delete=models.CASCADE)
+    year = models.IntegerField()
+
+    def __str__(self):
+        return f"{self.farm.farm_name} - {self.crop.crop_name} ({self.year})"
+
+    class Meta:
+        unique_together = ('farm', 'year')
+        ordering = ['-year']
+
+class WeatherForecast(models.Model):
+    farm = models.ForeignKey(Farm, on_delete=models.CASCADE, related_name='weather_forecasts')
+    date = models.DateField()
+    temperature_max = models.FloatField()
+    temperature_min = models.FloatField()
+    rainfall = models.FloatField()
+    humidity = models.FloatField()
+
+    def __str__(self):
+        return f"Forecast for {self.farm.farm_name} on {self.date}"
+
+    class Meta:
+        unique_together = ('farm', 'date')
+        ordering = ['date']
+
+class CropIdealConditions(models.Model):
+    crop = models.OneToOneField(Crop, on_delete=models.CASCADE, related_name='ideal_conditions')
+    ideal_temperature_min = models.FloatField()
+    ideal_temperature_max = models.FloatField()
+    ideal_rainfall_min = models.FloatField()
+    ideal_rainfall_max = models.FloatField()
+    ideal_humidity_min = models.FloatField()
+    ideal_humidity_max = models.FloatField()
+
+    def __str__(self):
+        return f"Ideal conditions for {self.crop.crop_name}"
+
+class WeatherImpact(models.Model):
+    farm = models.ForeignKey(Farm, on_delete=models.CASCADE, related_name='weather_impacts')
+    crop = models.ForeignKey(Crop, on_delete=models.CASCADE)
+    date = models.DateField()
+    impact_description = models.TextField()
+
+    def __str__(self):
+        return f"Impact on {self.crop.crop_name} at {self.farm.farm_name} on {self.date}"
+
+    class Meta:
+        unique_together = ('farm', 'crop', 'date')
+        ordering = ['date']

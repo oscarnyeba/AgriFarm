@@ -19,7 +19,6 @@
         </div>
         <div class="farm-actions">
             <a href="{% url 'edit_farm' farm.id %}" class="btn btn-edit">Edit Farm details</a>
-            <a href="{% url 'ask_expert' %}" class="btn btn-expert">Ask Expert</a>
             <a href="{% url 'farm_list' %}" class="btn btn-expert">Farms</a>
             <form method="post" action="{% url 'logout' %}">
                 {% csrf_token %}
@@ -40,6 +39,15 @@
                         <th>Rainfall (mm)</th>
                         <th>Humidity (%)</th>
                         <th>Temperature (°C)</th>
+                        <th>Wind Speed (m/s)</th>
+                        <th>Wind Direction (°)</th>
+                        <th>Cloudiness (%)</th>
+                        <th>Feels Like (°C)</th>
+                        <th>Temp Min (°C)</th>
+                        <th>Temp Max (°C)</th>
+                        <th>Pressure (hPa)</th>
+                        <th>Sea Level (hPa)</th>
+                        <th>Visibility (m)</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -47,6 +55,15 @@
                         <td>{{ weather_info.rainfall }}</td>
                         <td>{{ weather_info.humidity }}</td>
                         <td>{{ weather_info.temperature }}</td>
+                        <td>{{ weather_info.wind_speed }}</td>
+                        <td>{{ weather_info.wind_direction }}</td>
+                        <td>{{ weather_info.cloudiness }}</td>
+                        <td>{{ weather_info.feels_like }}</td>
+                        <td>{{ weather_info.temp_min }}</td>
+                        <td>{{ weather_info.temp_max }}</td>
+                        <td>{{ weather_info.pressure }}</td>
+                        <td>{{ weather_info.sea_level }}</td>
+                        <td>{{ weather_info.visibility }}</td>
                     </tr>
                 </tbody>
             </table>
@@ -66,6 +83,16 @@
                         <th>Rainfall (mm)</th>
                         <th>Humidity (%)</th>
                         <th>Temperature (°C)</th>
+                        <th>Wind Speed (m/s)</th>
+                        <th>Wind Direction (°)</th>
+                        <th>Cloudiness (%)</th>
+                        <th>Feels Like (°C)</th>
+                        <th>Temp Min (°C)</th>
+                        <th>Temp Max (°C)</th>
+                        <th>Pressure (hPa)</th>
+                        <th>Sea Level (hPa)</th>
+                        <th>Visibility (m)</th>
+                        
                     </tr>
                 </thead>
                 <tbody>
@@ -75,6 +102,15 @@
                         <td>{{ data.rainfall }}</td>
                         <td>{{ data.humidity }}</td>
                         <td>{{ data.temperature }}</td>
+                        <td>{{ data.wind_speed }}</td>
+                        <td>{{ data.wind_direction }}</td>
+                        <td>{{ data.cloudiness }}</td>
+                        <td>{{ data.feels_like }}</td>
+                        <td>{{ data.temp_min }}</td>
+                        <td>{{ data.temp_max }}</td>
+                        <td>{{ data.pressure }}</td>
+                        <td>{{ data.sea_level }}</td>
+                        <td>{{ data.visibility }}</td>
                     </tr>
                     {% endfor %}
                 </tbody>
@@ -85,13 +121,14 @@
         </div>
 
         <!-- Soil and Recommended Crops Information -->
-        <div class="soil-crop-info-section">
+         <div class="soil-crop-info-section">
+            <!-- Soil Information Section -->
             <div class="info-box soil-info">
                 <h2>Soil Information</h2>
                 {% if soil_info %}
-                    <p>Soil Type: {{ soil_info.type }}</p>
-                    <p>pH Level: {{ soil_info.ph_level }}</p>
-                    <p>Nutrient Content: {{ soil_info.nutrient_content }}</p>
+                    <p>Soil Type: {{ soil_info.properties.soil_type|default:"Unknown" }}</p>
+                    <p>pH Level: {{ soil_info.properties.ph_level|default:"N/A" }}</p>
+                    <p>Nutrient Content: {{ soil_info.properties.nutrient_content|default:"Unknown" }}</p>
                 {% else %}
                     <p>No soil data available.</p>
                 {% endif %}
@@ -108,4 +145,5 @@
         </div>
     </div>
 </div>
+<pre>{{ soil_info | safe }}</pre>
 {% endblock %}
