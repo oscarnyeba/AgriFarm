@@ -3,6 +3,7 @@ from django.contrib.auth.models import User
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.contrib.auth import get_user_model
 from django.urls import reverse
+from django.utils import timezone
 
 
 class SoilTexture(models.TextChoices):
@@ -36,17 +37,14 @@ class Soil(models.Model):
         return f"Soil conditions for {self.farm.farm_name}"
 
 class Farm(models.Model):
-    farm_name = models.CharField(max_length=100, unique=True)
-    location = models.CharField(max_length=255)  # City name or manual input for OpenWeather
-    latitude = models.DecimalField(max_digits=8, decimal_places=6, blank=True, null=True)
-    longitude = models.DecimalField(max_digits=9, decimal_places=6, blank=True, null=True)
-    total_area = models.DecimalField(max_digits=10, decimal_places=2)
-    user = models.ForeignKey(User, on_delete=models.CASCADE) 
+    farm_name = models.CharField(max_length=100)
+    location = models.CharField(max_length=100)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    latitude = models.FloatField(default=0)
+    longitude = models.FloatField(default=0)
+
     def __str__(self):
         return self.farm_name
-class Meta:
-        verbose_name = 'Farm'
-        verbose_name_plural = 'Farms'
 
 class Crop(models.Model):
     crop_name = models.CharField(max_length=50, help_text="Enter the name of the crop.")
@@ -103,30 +101,28 @@ class Crop(models.Model):
 # ** Weather Data Model **
 class WeatherData(models.Model):
     farm = models.ForeignKey(Farm, on_delete=models.CASCADE)
-    date = models.DateField(auto_now_add=True)
-    temperature = models.FloatField(default=0)
-    feels_like = models.FloatField(default=0)
-    temp_min = models.FloatField(default=0)
-    temp_max = models.FloatField(default=0)
-    pressure = models.FloatField(default=0)
-    humidity = models.FloatField(default=0)
-    sea_level = models.FloatField(null=True, blank=True)  # Nullable for cases when sea_level is missing
-    grnd_level = models.FloatField(null=True, blank=True)  # Nullable for cases when grnd_level is missing
-    visibility = models.FloatField(null=True, blank=True)
-    wind_speed = models.FloatField(default=0)
-    wind_direction = models.FloatField(default=0)
+    date = models.DateField()
+    temperature = models.FloatField(default=0.0)
+    feels_like = models.FloatField(default=0.0)
+    temp_min = models.FloatField(default=0.0)
+    temp_max = models.FloatField(default=0.0)
+    pressure = models.IntegerField(default=1013)  # Standard sea level pressure
+    humidity = models.IntegerField(default=50)  # Average humidity
+    visibility = models.IntegerField(default=10000)  # 10 km, good visibility
+    wind_speed = models.FloatField(default=0.0)
+    wind_direction = models.IntegerField(default=0)
     wind_gust = models.FloatField(null=True, blank=True)
-    cloudiness = models.FloatField(default=0)
-    rainfall = models.FloatField(null=True, blank=True)  # Since rain data is not always available
-    
-
-    def __str__(self):
-        return f"{self.farm.farm_name} - {self.date}"
+    cloudiness = models.IntegerField(default=0)
+    rainfall = models.FloatField(default=0.0)
+    weather_main = models.CharField(max_length=100, default='Clear')
+    weather_description = models.CharField(max_length=200, default='Clear sky')
+    weather_icon = models.CharField(max_length=10, default='01d')
 
     class Meta:
         unique_together = ('farm', 'date')
-        verbose_name = 'Weather Data'
-        verbose_name_plural = 'Weather Data'
+
+    def __str__(self):
+        return f"{self.farm.farm_name} - {self.date}"
 
     def get_absolute_url(self):
         return reverse('weather_data_detail', args=[str(self.id)])
@@ -142,12 +138,9 @@ class Recommendation(models.Model):
         return f"{self.farm.farm_name} - {self.crop.crop_name} - {self.date}"
 
 class Profile(models.Model):
-    USER_TYPES = (
-        (1, 'Farmer'),
-        (2, 'Expert'),
-    )
-    user = models.OneToOneField(get_user_model(), on_delete=models.CASCADE, related_name='profile')
-    user_type = models.IntegerField(choices=USER_TYPES)
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    # Remove the user_type field
+    # Add any other farmer-specific fields you need
 
     def __str__(self):
         return f"{self.user.username} - {self.user_type}"
@@ -241,3 +234,4 @@ class WeatherImpact(models.Model):
     class Meta:
         unique_together = ('farm', 'crop', 'date')
         ordering = ['date']
+

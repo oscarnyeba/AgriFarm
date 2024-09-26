@@ -29,121 +29,72 @@
 
     <!-- Right Section: Weather, Soil, and Crops Info -->
     <div class="right-section">
-        <!-- Current Weather Section -->
-        <div class="info-box current-weather">
-            <h2>Current Weather</h2>
+        <section id="current-weather">
+            <h2>Current Weather in {{ weather_info.name }}</h2>
             {% if weather_info %}
-            <table class="weather-table">
-                <thead>
-                    <tr>
-                        <th>Rainfall (mm)</th>
-                        <th>Humidity (%)</th>
-                        <th>Temperature (°C)</th>
-                        <th>Wind Speed (m/s)</th>
-                        <th>Wind Direction (°)</th>
-                        <th>Cloudiness (%)</th>
-                        <th>Feels Like (°C)</th>
-                        <th>Temp Min (°C)</th>
-                        <th>Temp Max (°C)</th>
-                        <th>Pressure (hPa)</th>
-                        <th>Sea Level (hPa)</th>
-                        <th>Visibility (m)</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td>{{ weather_info.rainfall }}</td>
-                        <td>{{ weather_info.humidity }}</td>
-                        <td>{{ weather_info.temperature }}</td>
-                        <td>{{ weather_info.wind_speed }}</td>
-                        <td>{{ weather_info.wind_direction }}</td>
-                        <td>{{ weather_info.cloudiness }}</td>
-                        <td>{{ weather_info.feels_like }}</td>
-                        <td>{{ weather_info.temp_min }}</td>
-                        <td>{{ weather_info.temp_max }}</td>
-                        <td>{{ weather_info.pressure }}</td>
-                        <td>{{ weather_info.sea_level }}</td>
-                        <td>{{ weather_info.visibility }}</td>
-                    </tr>
-                </tbody>
-            </table>
+                <div class="weather-overview">
+                    <img src="http://openweathermap.org/img/wn/{{ weather_info.weather.0.icon }}@2x.png" alt="{{ weather_info.weather.0.description }}">
+                    <h3>{{ weather_info.weather.0.main }} ({{ weather_info.weather.0.description }})</h3>
+                    <p>Temperature: {{ weather_info.main.temp }}°C</p>
+                    <p>Feels like: {{ weather_info.main.feels_like }}°C</p>
+                </div>
+                
+                <div class="weather-details">
+                    <h3>Details</h3>
+                    <p>Min Temperature: {{ weather_info.main.temp_min }}°C</p>
+                    <p>Max Temperature: {{ weather_info.main.temp_max }}°C</p>
+                    <p>Pressure: {{ weather_info.main.pressure }} hPa</p>
+                    <p>Humidity: {{ weather_info.main.humidity }}%</p>
+                    <p>Sea Level Pressure: {{ weather_info.main.sea_level }} hPa</p>
+                    <p>Ground Level Pressure: {{ weather_info.main.grnd_level }} hPa</p>
+                    <p>Visibility: {{ weather_info.visibility }} meters</p>
+                </div>
+                
+                <div class="wind-info">
+                    <h3>Wind</h3>
+                    <p>Speed: {{ weather_info.wind.speed }} m/s</p>
+                    <p>Direction: {{ weather_info.wind.deg }}°</p>
+                    <p>Gust: {{ weather_info.wind.gust }} m/s</p>
+                </div>
+                
+                <div class="cloud-info">
+                    <h3>Clouds</h3>
+                    <p>Cloudiness: {{ weather_info.clouds.all }}%</p>
+                </div>
+                
+                <div class="sun-info">
+                    <h3>Sun</h3>
+                    <p>Sunrise: {{ weather_info.sys.sunrise|date:"H:i" }}</p>
+                    <p>Sunset: {{ weather_info.sys.sunset|date:"H:i" }}</p>
+                </div>
+                
+                <div class="location-info">
+                    <h3>Location</h3>
+                    <p>Coordinates: {{ weather_info.coord.lat }}, {{ weather_info.coord.lon }}</p>
+                    <p>Country: {{ weather_info.sys.country }}</p>
+                </div>
+                
+                <p>Last updated: {{ weather_info.dt|date:"F d, Y H:i:s" }}</p>
             {% else %}
                 <p>No current weather data available.</p>
             {% endif %}
-        </div>
-
-        <!-- Weather History Section -->
-        <div class="info-box weather-history">
-            <h2>Weather History</h2>
-            {% if weather_data %}
-            <table class="weather-table">
-                <thead>
-                    <tr>
-                        <th>Date</th>
-                        <th>Rainfall (mm)</th>
-                        <th>Humidity (%)</th>
-                        <th>Temperature (°C)</th>
-                        <th>Wind Speed (m/s)</th>
-                        <th>Wind Direction (°)</th>
-                        <th>Cloudiness (%)</th>
-                        <th>Feels Like (°C)</th>
-                        <th>Temp Min (°C)</th>
-                        <th>Temp Max (°C)</th>
-                        <th>Pressure (hPa)</th>
-                        <th>Sea Level (hPa)</th>
-                        <th>Visibility (m)</th>
-                        
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for data in weather_data %}
-                    <tr>
-                        <td>{{ data.date }}</td>
-                        <td>{{ data.rainfall }}</td>
-                        <td>{{ data.humidity }}</td>
-                        <td>{{ data.temperature }}</td>
-                        <td>{{ data.wind_speed }}</td>
-                        <td>{{ data.wind_direction }}</td>
-                        <td>{{ data.cloudiness }}</td>
-                        <td>{{ data.feels_like }}</td>
-                        <td>{{ data.temp_min }}</td>
-                        <td>{{ data.temp_max }}</td>
-                        <td>{{ data.pressure }}</td>
-                        <td>{{ data.sea_level }}</td>
-                        <td>{{ data.visibility }}</td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-            {% else %}
-                <p>No weather history data available.</p>
-            {% endif %}
-        </div>
-
-        <!-- Soil and Recommended Crops Information -->
-         <div class="soil-crop-info-section">
-            <!-- Soil Information Section -->
-            <div class="info-box soil-info">
-                <h2>Soil Information</h2>
-                {% if soil_info %}
-                    <p>Soil Type: {{ soil_info.properties.soil_type|default:"Unknown" }}</p>
-                    <p>pH Level: {{ soil_info.properties.ph_level|default:"N/A" }}</p>
-                    <p>Nutrient Content: {{ soil_info.properties.nutrient_content|default:"Unknown" }}</p>
-                {% else %}
-                    <p>No soil data available.</p>
-                {% endif %}
-            </div>
-
-            <div class="info-box recommended-crops">
-                <h2>Recommended Crops</h2>
+        </section>        
+        
+        <div class="info-box recommended-crops">
+            <h2>Recommended Crops</h2>
+            {% if recommendations %}
                 <ul>
                     {% for crop in recommendations %}
-                        <li>{{ crop }}</li>
+                        <li>
+                            <strong>{{ crop.name }}</strong>
+                            <p>Predicted Yield: {{ crop.predicted_yield }} units/acre</p>
+                        </li>
                     {% endfor %}
                 </ul>
-            </div>
+            {% else %}
+                <p>No crop recommendations available at the moment.</p>
+            {% endif %}
         </div>
     </div>
 </div>
-<pre>{{ soil_info | safe }}</pre>
 {% endblock %}

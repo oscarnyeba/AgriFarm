@@ -28,8 +28,14 @@ body {
     max-width: 400px;
     padding: 40px;
     background-color: #fff;
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-    border-radius: 15px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    border-radius: 20px;
+    transition: all 0.3s ease;
+}
+
+.form-container:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
 }
 
 .logo {
@@ -37,14 +43,21 @@ body {
     margin: 0 auto 30px;
     width: 120px;
     height: auto;
+    transition: transform 0.3s ease;
+}
+
+.logo:hover {
+    transform: scale(1.05);
 }
 
 h2 {
-    font-size: 28px;
+    font-size: 32px;
     color: #2c3e50;
     margin-bottom: 30px;
     text-align: center;
     font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
 }
 
 .brand-name {
@@ -52,21 +65,26 @@ h2 {
 }
 
 .input-container {
-    margin-bottom: 20px;
+    margin-bottom: 25px;
+    position: relative;
 }
 
 input {
     width: 100%;
-    padding: 12px;
+    padding: 15px;
     font-size: 16px;
-    border: 1px solid #bdc3c7;
-    border-radius: 5px;
-    transition: border-color 0.3s ease;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    background-color: #f9f9f9;
+    margin-bottom: 20px;
 }
 
 input:focus {
     border-color: #27ae60;
     outline: none;
+    background-color: #fff;
+    box-shadow: 0 0 10px rgba(39, 174, 96, 0.1);
 }
 
 /* Placeholder Styling */
@@ -75,66 +93,65 @@ input::placeholder {
     font-size: 14px;
 }
 
-/* Align Remember Me and Forgot Password */
-.form-group {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-top: 15px;
-}
-
-.checkbox-container {
-    display: flex;
-    align-items: center;
-}
-
-.checkbox-container input[type="checkbox"] {
-    margin-right: 8px;
-}
-
-.forgot-password {
-    color: #3498db;
-    text-decoration: none;
+/* Form Error Styling */
+.errorlist {
+    color: #e74c3c;
     font-size: 14px;
-    transition: color 0.3s ease;
+    list-style-type: none;
+    padding: 0;
+    margin-top: 5px;
 }
 
-.forgot-password:hover {
-    color: #2980b9;
-}
-
-.btn-signin {
+button[type="submit"] {
     width: 100%;
-    padding: 12px;
+    padding: 15px;
     background-color: #27ae60;
     border: none;
-    border-radius: 5px;
+    border-radius: 8px;
     color: #fff;
-    font-size: 16px;
+    font-size: 18px;
+    font-weight: 600;
     cursor: pointer;
     margin-top: 25px;
-    transition: background-color 0.3s ease;
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+    letter-spacing: 1px;
 }
 
-.btn-signin:hover {
+button[type="submit"]:hover {
     background-color: #2ecc71;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(46, 204, 113, 0.3);
 }
 
-.signup-prompt {
+.login-redirect {
     text-align: center;
-    margin-top: 25px;
-    font-size: 14px;
+    margin-top: 30px;
+    padding-top: 20px;
+    border-top: 1px solid #e0e0e0;
+    font-size: 16px;
 }
 
-.signup-prompt a {
+.login-redirect a {
     color: #27ae60;
     text-decoration: none;
     font-weight: 600;
-    transition: color 0.3s ease;
+    transition: all 0.3s ease;
+    position: relative;
+    display: inline-block;
+    margin-top: 10px;
+    padding: 10px 20px;
+    background-color: #f0f4f0;
+    border-radius: 8px;
 }
 
-.signup-prompt a:hover {
-    color: #2ecc71;
+.login-redirect a::after {
+    content: none;
+}
+
+.login-redirect a:hover {
+    color: #fff;
+    background-color: #27ae60;
 }
 
 /* Right Section: Image */
@@ -149,6 +166,11 @@ input::placeholder {
     width: 100%;
     height: 100%;
     object-fit: cover;
+    transition: transform 10s ease;
+}
+
+.right-section:hover .right-image {
+    transform: scale(1.1);
 }
 
 /* Responsive Design */
@@ -169,20 +191,4 @@ input::placeholder {
         max-width: 100%;
         box-shadow: none;
     }
-}
-
-.login-redirect {
-    text-align: center;
-    margin-top: 20px;
-}
-
-.login-redirect a {
-    color: #27ae60;
-    text-decoration: none;
-    font-weight: 600;
-    transition: color 0.3s ease;
-}
-
-.login-redirect a:hover {
-    color: #2ecc71;
 }

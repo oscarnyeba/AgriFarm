@@ -13,6 +13,8 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 from pathlib import Path
 import os
 import logging
+import firebase_admin
+from firebase_admin import credentials
 
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -45,9 +47,10 @@ INSTALLED_APPS = [
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
-    'django.contrib.messages',
+    'django.contrib.messages',  # This is the correct entry for messages
     'django.contrib.staticfiles',
     'farm_management',
+    # Do not include 'messages' here
 ]
 
 MIDDLEWARE = [

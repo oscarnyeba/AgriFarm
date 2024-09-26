@@ -9,19 +9,14 @@ from farm_management.views import login_view
 
 
 urlpatterns = [
-    path('', lambda request: redirect('login')),
-    path('farm/edit/<int:farm_id>/', edit_farm, name='edit_farm'),
-    path('login/', views.login_view, name='login'),
     path('register/', views.register, name='register'),
-    path('logout/', auth_views.LogoutView.as_view(next_page='login'), name='logout'),
-    path('farm/<int:farm_id>/', views.farm_detail, name='farm_detail'),
+    path('login/', views.login_view, name='login'),
+    path('logout/', views.logout_view, name='logout'),
     path('farm_list/', views.farm_list_view, name='farm_list'),
+    path('farm/<int:farm_id>/', views.farm_detail, name='farm_detail'),
     path('farm/add/', views.add_farm, name='add_farm'),
-    path('farm/<int:farm_id>/add_weather/', views.add_weather_data, name='add_weather_data'),
     path('farmer/profile/', views.farmer_profile, name='farmer_profile'),
-    path('expert/profile/', views.expert_profile, name='expert_profile'),
     path('profile/edit/', edit_profile, name='edit_profile'),
-
-
-
+    path('weather_alert/', views.weather_alert, name='weather_alert'),
+    path('edit_farm/<int:farm_id>/', views.edit_farm, name='edit_farm'),
 ]
