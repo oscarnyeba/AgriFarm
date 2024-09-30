@@ -24,7 +24,7 @@ AgriFarm is a Django-based web application for managing farms, tracking weather 
 
 1. Clone the repository:
    ```
-   git clone https://github.com/yourusername/agrifarm.git
+   git clone https://github.com/oscarnyeba/AgriFarm.git
    cd agrifarm
    ```
 
