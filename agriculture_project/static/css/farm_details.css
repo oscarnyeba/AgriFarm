@@ -1,237 +1,356 @@
 /* General Styles */
 body {
     font-family: 'Roboto', Arial, sans-serif;
-    background-color: #f0f4f0;
-    color: #333;
-    line-height: 1.6;
+    background-color: #f0f2f5;
     margin: 0;
     padding: 0;
+    color: #333;
 }
 
-.farm-details-container {
+.dashboard-container {
     display: flex;
-    max-width: 100%;
-    min-height: 100vh;
+    flex-wrap: nowrap;
+    gap: 20px;
+    padding: 20px;
+    margin-top: 20px;
+    max-width: 1200px;
+    margin: auto;
 }
 
-/* Left Section */
-.left-section {
-    width: 300px;
-    background-color: #2c3e50;
-    padding: 30px;
+/* Left Panel Styles */
+.left-panel {
     display: flex;
     flex-direction: column;
-    align-items: center;
-    justify-content: flex-start;
-    position: fixed;
-    left: 0;
-    top: 0;
-    height: 100vh;
+    gap: 20px;
+    background: linear-gradient(135deg, #3a7bd5, #00d2ff);
+    color: #fff;
+    padding: 30px;
+    border-radius: 20px;
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+    position: sticky;
+    top: 30px;
+    max-height: 90vh;
     overflow-y: auto;
-    box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
 }
 
-.farm-logo img {
-    width: 120px;
-    height: 120px;
-    object-fit: cover;
-    border-radius: 50%;
-    border: 3px solid #ecf0f1;
-    margin-bottom: 30px;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-}
-
-.farm-details {
-    text-align: center;
-    margin-bottom: 30px;
-}
-
-.farm-details h1 {
-    font-size: 28px;
-    color: #ecf0f1;
-    margin-bottom: 10px;
-    font-weight: 700;
-}
-
-.farm-details p {
-    font-size: 16px;
-    color: #bdc3c7;
-    margin: 5px 0;
-}
-
-/* Farm Actions */
 .farm-actions {
     display: flex;
-    flex-direction: column;
-    gap: 15px;
-    width: 100%;
+    justify-content: space-between;
+    margin-bottom: 20px;
 }
 
-.farm-actions .btn {
-    display: block;
-    width: 100%;
-    padding: 12px;
-    border-radius: 25px;
-    text-align: center;
-    text-decoration: none;
-    font-size: 16px;
-    font-weight: 600;
-    transition: all 0.3s ease;
+.btn {
+    padding: 10px 20px;
     border: none;
+    border-radius: 50px;
     cursor: pointer;
+    font-size: 14px;
+    font-weight: bold;
+    text-decoration: none;
+    color: white;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
 }
 
 .btn-edit {
-    background-color: #27ae60;
-    color: #ecf0f1;
+    background-color: #3498db;
 }
 
 .btn-expert {
-    background-color: #3498db;
-    color: #ecf0f1;
+    background-color: #2ecc71;
 }
 
 .btn-danger {
     background-color: #e74c3c;
-    color: #ecf0f1;
 }
 
-.btn-edit:hover, .btn-expert:hover, .btn-danger:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+.farm-info h2 {
+    margin-bottom: 10px;
 }
 
-/* Right Section */
-.right-section {
-    flex: 1;
-    margin-left: 300px;
-    padding: 40px;
-    background-color: #ecf0f1;
-}
-
-#current-weather {
-    background-color: #fff;
-    border-radius: 15px;
-    padding: 30px;
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-    margin-bottom: 30px;
-}
-
-#current-weather h2 {
-    color: #2c3e50;
-    font-size: 24px;
-    margin-bottom: 20px;
-    border-bottom: 2px solid #3498db;
-    padding-bottom: 10px;
-}
-
-.weather-overview {
+.farm-info p {
     display: flex;
     align-items: center;
-    margin-bottom: 20px;
 }
 
-.weather-overview img {
-    width: 100px;
-    height: 100px;
+.farm-info i {
+    margin-right: 10px;
+    color: #3498db;
+}
+
+.current-weather {
+    text-align: center;
+    margin: 30px 0;
+}
+
+.date-time p {
+    font-size: 1.3em;
+    margin: 5px 0;
+    opacity: 0.9;
+}
+
+.current-temp {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.current-temp img {
+    width: 120px;
+    height: 120px;
     margin-right: 20px;
 }
 
-.weather-overview h3 {
-    font-size: 24px;
-    color: #2c3e50;
-    margin-bottom: 10px;
+.current-temp h1 {
+    font-size: 6em;
+    margin: 0;
+    text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.2);
 }
 
-.weather-overview p {
-    font-size: 18px;
-    color: #34495e;
-    margin: 5px 0;
+.weather-condition p {
+    font-size: 1.8em;
+    margin-top: 10px;
+    font-weight: 300;
 }
 
-.weather-details, .wind-info, .cloud-info, .sun-info, .location-info {
-    background-color: #f9f9f9;
-    border-radius: 10px;
-    padding: 20px;
-    margin-bottom: 20px;
-}
-
-.weather-details h3, .wind-info h3, .cloud-info h3, .sun-info h3, .location-info h3 {
-    color: #2c3e50;
-    font-size: 20px;
-    margin-bottom: 15px;
-    border-bottom: 1px solid #bdc3c7;
-    padding-bottom: 5px;
-}
-
-.weather-details p, .wind-info p, .cloud-info p, .sun-info p, .location-info p {
-    font-size: 16px;
-    color: #34495e;
-    margin: 10px 0;
-}
-
-.info-box {
-    background-color: #fff;
+/* Seven Day Forecast */
+.seven-day-forecast {
+    margin-top: 40px;
+    background: rgba(255, 255, 255, 0.1);
     border-radius: 15px;
+    padding: 20px;
+}
+
+.seven-day-forecast h3 {
+    font-size: 1.8em;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.forecast-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.forecast-day {
+    text-decoration: none;
+    color: inherit;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px;
+    border-radius: 5px;
+    transition: background-color 0.3s ease;
+}
+
+.forecast-day:hover {
+    background-color: rgba(0, 0, 0, 0.1);
+}
+
+.forecast-day.selected {
+    background-color: rgba(0, 0, 0, 0.2);
+    font-weight: bold;
+}
+
+.forecast-icon img {
+    width: 50px;
+    height: 50px;
+}
+
+.forecast-temp {
+    flex: 1;
+    text-align: center;
+    font-size: 1.3em;
+}
+
+.max-temp {
+    font-weight: bold;
+    color: #fff;
+}
+
+.min-temp {
+    color: rgba(255, 255, 255, 0.7);
+    margin-left: 10px;
+}
+
+.forecast-date {
+    text-align: right;
+}
+
+.forecast-date p:first-child {
+    font-weight: bold;
+    font-size: 1.2em;
+}
+
+.forecast-date p:last-child {
+    color: rgba(255, 255, 255, 0.7);
+}
+
+/* Right Panel Styles */
+.right-panel {
+    flex: 1;
+    min-width: 0; /* Allows the right panel to shrink if necessary */
+    display: flex;
+    flex-direction: column;
+}
+
+.weather-header {
+    background-color: white;
+    border-radius: 20px;
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
     padding: 30px;
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
     margin-bottom: 30px;
 }
 
-.info-box h2 {
-    color: #2c3e50;
-    font-size: 24px;
-    margin-bottom: 20px;
-    border-bottom: 2px solid #27ae60;
-    padding-bottom: 10px;
-}
-
-.recommended-crops ul {
-    list-style-type: none;
-    padding-left: 0;
-}
-
-.recommended-crops li {
-    background-color: #e8f5e9;
-    border-radius: 5px;
-    padding: 15px;
+.weather-header h1 {
+    color: #3498db;
     margin-bottom: 10px;
-    font-size: 16px;
-    color: #2c3e50;
-    font-weight: 500;
+    font-size: 2.5em;
+}
+
+.weather-header p {
+    color: #7f8c8d;
+    font-size: 1.2em;
+}
+
+/* Today's Highlight and Crop Recommendations */
+.todays-highlight, .crop-recommendations {
+    background-color: #f9f9f9;
+    border-radius: 15px;
+    padding: 25px;
+    margin-bottom: 30px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+}
+
+.todays-highlight h3, .crop-recommendations h3 {
+    color: #3498db;
+    margin-bottom: 20px;
+    font-size: 1.8em;
+}
+
+.highlight-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 10px;
+}
+
+.highlight-card {
+    background-color: #f8f8f8;
+    padding: 10px;
+    border-radius: 5px;
+    text-align: center;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
     transition: all 0.3s ease;
 }
 
-.recommended-crops li:hover {
-    background-color: #c8e6c9;
-    transform: translateX(5px);
+.highlight-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
 }
 
-pre {
-    background-color: #f9f9f9;
-    border-radius: 10px;
-    padding: 20px;
-    overflow-x: auto;
-    font-size: 14px;
-    color: #34495e;
-    border: 1px solid #bdc3c7;
+.highlight-card h4 {
+    margin-top: 0;
+    color: #3498db;
+    font-size: 1.3em;
 }
 
-/* Ensure all elements are visible */
-* {
-    visibility: visible !important;
-    display: block !important;
-    opacity: 1 !important;
+.highlight-card p {
+    font-size: 1.8em;
+    font-weight: bold;
+    margin-top: 10px;
+    color: #2c3e50;
 }
 
-/* Expose any potentially hidden elements */
-[hidden], .hidden, .invisible, [style*="display: none"], [style*="visibility: hidden"], [style*="opacity: 0"] {
-    display: block !important;
-    visibility: visible !important;
-    opacity: 1 !important;
+/* Crop Recommendations */
+.crop-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 10px;
 }
 
-/* Ensure overflow is visible */
-body, html, .farm-details-container, .left-section, .right-section {
-    overflow: visible !important;
+.crop-card {
+    background-color: #f8f8f8;
+    padding: 10px;
+    border-radius: 5px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+    transition: all 0.3s ease;
 }
+
+.crop-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+}
+
+.crop-card h4 {
+    margin-top: 0;
+    color: #4a90e2;
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+    .dashboard-container {
+        flex-direction: column;
+    }
+    
+    .left-panel {
+        position: static;
+        max-height: none;
+        width: 100%;
+    }
+
+    .right-panel {
+        width: 100%;
+    }
+}
+
+@media (max-width: 768px) {
+    .dashboard-container {
+        flex-direction: column;
+    }
+
+    .left-panel, .right-panel {
+        flex: 1 1 auto;
+        width: 100%;
+    }
+}
+
+.current-temp i {
+    color: #FFA500; /* Orange color for the main weather icon */
+    margin-bottom: 10px;
+}
+
+.forecast-icon i {
+    color: #4a4a4a; /* Adjust color as needed */
+}
+
+/* Style for icons in headers */
+h1 i, h2 i, h3 i, h4 i {
+    margin-right: 10px;
+    color: #4a4a4a; /* Adjust color as needed */
+}
+
+/* Style for icons in highlight cards */
+.highlight-card h4 i {
+    margin-right: 5px;
+    color: #4a4a4a; /* Adjust color as needed */
+}
+
+/* Style for icons in crop cards */
+.crop-card h4 i, .crop-card p i {
+    margin-right: 5px;
+    color: #4a4a4a; /* Adjust color as needed */
+}
+
+/* Color specifics for different metrics */
+.highlight-card h4 i.fa-tint { color: #3498db; } /* Blue for humidity */
+.highlight-card h4 i.fa-wind { color: #7f8c8d; } /* Gray for wind */
+.highlight-card h4 i.fa-thermometer-half { color: #e74c3c; } /* Red for temperature */
+.highlight-card h4 i.fa-cloud-rain { color: #3498db; } /* Blue for rainfall */
+
+/* Crop card icon styles */
+.crop-card h4 i.fa-leaf { color: #2ecc71; } /* Green for crop name */

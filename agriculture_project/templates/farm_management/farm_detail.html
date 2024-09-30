@@ -1,25 +1,96 @@
 {% extends "base.html" %}
 {% load static %}
+
 {% block css %}
 <link rel="stylesheet" type="text/css" href="{% static 'css/farm_details.css' %}">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 {% endblock %}
-{% block title %}{{ farm.farm_name }}{% endblock %}
+
+{% block title %}{{ farm.name }} - Weather Dashboard{% endblock %}
 
 {% block content %}
-<div class="farm-details-container">
-    <!-- Left Section: Farm Info and Actions -->
-    <div class="left-section">
-        <div class="farm-logo">
-            <img src="{% static 'images/logo.png' %}" alt="Farm Logo">
+<div class="dashboard-container">
+    <div class="left-panel">
+        <div class="farm-actions">
+            <a href="{% url 'edit_farm' farm.id %}" class="btn btn-edit">Edit Farm</a>
+            <a href="{% url 'farm_list' %}" class="btn btn-expert">All Farms</a>
+            <form method="post" action="{% url 'logout' %}" class="logout-form">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-danger">Logout</button>
+            </form>
         </div>
-        <div class="farm-details">
-            <h1>{{ farm.farm_name }}</h1>
-            <p>Location: {{ farm.location }}</p>
-            <p>Total Land: {{ farm.total_area }} acres</p>
+        <div class="farm-info">
+            <h2>{{ farm.name }} Farm</h2>
+            <p><i class="fas fa-map-marker-alt"></i> {{ farm.location }}</p>
+        </div>
+        <div class="current-weather">
+            <div class="date-time">
+                <p><i class="far fa-calendar-alt"></i> {{ selected_forecast.date|date:"l, d M Y" }}</p>
+                <p><i class="far fa-clock"></i> {{ selected_forecast.forecasts.0.time }}</p>
+            </div>
+            <div class="current-temp">
+                {% with weather_main=selected_forecast.weather_main|lower %}
+                    {% if 'clear' in weather_main %}
+                        <i class="fas fa-sun fa-4x"></i>
+                    {% elif 'cloud' in weather_main %}
+                        <i class="fas fa-cloud fa-4x"></i>
+                    {% elif 'rain' in weather_main %}
+                        <i class="fas fa-cloud-rain fa-4x"></i>
+                    {% elif 'snow' in weather_main %}
+                        <i class="fas fa-snowflake fa-4x"></i>
+                    {% elif 'thunderstorm' in weather_main %}
+                        <i class="fas fa-bolt fa-4x"></i>
+                    {% elif 'mist' in weather_main or 'fog' in weather_main %}
+                        <i class="fas fa-smog fa-4x"></i>
+                    {% else %}
+                        <i class="fas fa-cloud-sun fa-4x"></i>
+                    {% endif %}
+                {% endwith %}
+                <h1>{{ selected_forecast.temp|floatformat:0 }}°</h1>
+            </div>
+            <div class="weather-condition">
+                <p>{{ selected_forecast.weather_main }}</p>
+            </div>
+        </div>
+        <div class="seven-day-forecast">
+            <h3>7 Days Forecast</h3>
+            <div class="forecast-list">
+                {% for day in forecast_data %}
+                    <a href="?day={{ forloop.counter0 }}" class="forecast-day {% if forloop.counter0 == selected_day %}selected{% endif %}">
+                        <div class="forecast-icon">
+                            {% with weather_main=day.weather_main|lower %}
+                                {% if 'clear' in weather_main %}
+                                    <i class="fas fa-sun fa-2x"></i>
+                                {% elif 'cloud' in weather_main %}
+                                    <i class="fas fa-cloud fa-2x"></i>
+                                {% elif 'rain' in weather_main %}
+                                    <i class="fas fa-cloud-rain fa-2x"></i>
+                                {% elif 'snow' in weather_main %}
+                                    <i class="fas fa-snowflake fa-2x"></i>
+                                {% elif 'thunderstorm' in weather_main %}
+                                    <i class="fas fa-bolt fa-2x"></i>
+                                {% elif 'mist' in weather_main or 'fog' in weather_main %}
+                                    <i class="fas fa-smog fa-2x"></i>
+                                {% else %}
+                                    <i class="fas fa-cloud-sun fa-2x"></i>
+                                {% endif %}
+                            {% endwith %}
+                        </div>
+                        <div class="forecast-temp">
+                            <span class="max-temp">+{{ day.temp_max|floatformat:0 }}°</span>
+                            <span class="min-temp">/{{ day.temp_min|floatformat:0 }}°</span>
+                        </div>
+                        <div class="forecast-date">
+                            <p>{{ day.date|date:"d M" }}</p>
+                            <p>{{ day.date|date:"D" }}</p>
+                        </div>
+                    </a>
+                {% endfor %}
+            </div>
         </div>
         <div class="farm-actions">
-            <a href="{% url 'edit_farm' farm.id %}" class="btn btn-edit">Edit Farm details</a>
-            <a href="{% url 'farm_list' %}" class="btn btn-expert">Farms</a>
+            <a href="{% url 'edit_farm' farm.id %}" class="btn btn-edit">Edit Farm</a>
+            <a href="{% url 'farm_list' %}" class="btn btn-expert">All Farms</a>
             <form method="post" action="{% url 'logout' %}">
                 {% csrf_token %}
                 <button type="submit" class="btn btn-danger">Logout</button>
@@ -27,73 +98,68 @@
         </div>
     </div>
 
-    <!-- Right Section: Weather, Soil, and Crops Info -->
-    <div class="right-section">
-        <section id="current-weather">
-            <h2>Current Weather in {{ weather_info.name }}</h2>
-            {% if weather_info %}
-                <div class="weather-overview">
-                    <img src="http://openweathermap.org/img/wn/{{ weather_info.weather.0.icon }}@2x.png" alt="{{ weather_info.weather.0.description }}">
-                    <h3>{{ weather_info.weather.0.main }} ({{ weather_info.weather.0.description }})</h3>
-                    <p>Temperature: {{ weather_info.main.temp }}°C</p>
-                    <p>Feels like: {{ weather_info.main.feels_like }}°C</p>
+    <div class="right-panel">
+        <div class="weather-header">
+            <h1><i class="fas fa-chart-line"></i> Weather Forecast Dashboard</h1>
+            <p><i class="fas fa-info-circle"></i> Check out today's weather information</p>
+        </div>
+        <div class="todays-highlight">
+            <h3><i class="fas fa-star"></i> Day's Highlight</h3>
+            <div class="highlight-grid">
+                <div class="highlight-card">
+                    <h4><i class="fas fa-tint"></i> Humidity</h4>
+                    <p>{{ selected_forecast.humidity|default_if_none:"-" }}%</p>
                 </div>
-                
-                <div class="weather-details">
-                    <h3>Details</h3>
-                    <p>Min Temperature: {{ weather_info.main.temp_min }}°C</p>
-                    <p>Max Temperature: {{ weather_info.main.temp_max }}°C</p>
-                    <p>Pressure: {{ weather_info.main.pressure }} hPa</p>
-                    <p>Humidity: {{ weather_info.main.humidity }}%</p>
-                    <p>Sea Level Pressure: {{ weather_info.main.sea_level }} hPa</p>
-                    <p>Ground Level Pressure: {{ weather_info.main.grnd_level }} hPa</p>
-                    <p>Visibility: {{ weather_info.visibility }} meters</p>
+                <div class="highlight-card">
+                    <h4><i class="fas fa-wind"></i> Wind</h4>
+                    <p>{{ selected_forecast.wind_speed|default_if_none:"-"|floatformat:2 }} m/s</p>
                 </div>
-                
-                <div class="wind-info">
-                    <h3>Wind</h3>
-                    <p>Speed: {{ weather_info.wind.speed }} m/s</p>
-                    <p>Direction: {{ weather_info.wind.deg }}°</p>
-                    <p>Gust: {{ weather_info.wind.gust }} m/s</p>
+                <div class="highlight-card">
+                    <h4><i class="fas fa-thermometer-half"></i> Feels Like</h4>
+                    <p>{{ selected_forecast.feels_like|default_if_none:"-"|floatformat:0 }}°</p>
                 </div>
-                
-                <div class="cloud-info">
-                    <h3>Clouds</h3>
-                    <p>Cloudiness: {{ weather_info.clouds.all }}%</p>
+                <div class="highlight-card">
+                    <h4><i class="fas fa-cloud-rain"></i> Rainfall</h4>
+                    <p>{{ selected_forecast.rainfall|default_if_none:"-"|floatformat:2 }} mm</p>
                 </div>
-                
-                <div class="sun-info">
-                    <h3>Sun</h3>
-                    <p>Sunrise: {{ weather_info.sys.sunrise|date:"H:i" }}</p>
-                    <p>Sunset: {{ weather_info.sys.sunset|date:"H:i" }}</p>
+                <div class="highlight-card">
+                    <h4><i class="fas fa-umbrella"></i> Probability of Precipitation</h4>
+                    <p>{{ selected_forecast.pop|default_if_none:"-"|floatformat:0 }}%</p>
                 </div>
-                
-                <div class="location-info">
-                    <h3>Location</h3>
-                    <p>Coordinates: {{ weather_info.coord.lat }}, {{ weather_info.coord.lon }}</p>
-                    <p>Country: {{ weather_info.sys.country }}</p>
+                <div class="highlight-card">
+                    <h4><i class="fas fa-cloud"></i> Cloudiness</h4>
+                    <p>{{ selected_forecast.clouds|default_if_none:"-" }}%</p>
                 </div>
-                
-                <p>Last updated: {{ weather_info.dt|date:"F d, Y H:i:s" }}</p>
-            {% else %}
-                <p>No current weather data available.</p>
-            {% endif %}
-        </section>        
-        
-        <div class="info-box recommended-crops">
-            <h2>Recommended Crops</h2>
-            {% if recommendations %}
-                <ul>
-                    {% for crop in recommendations %}
-                        <li>
-                            <strong>{{ crop.name }}</strong>
-                            <p>Predicted Yield: {{ crop.predicted_yield }} units/acre</p>
-                        </li>
-                    {% endfor %}
-                </ul>
-            {% else %}
-                <p>No crop recommendations available at the moment.</p>
-            {% endif %}
+                <div class="highlight-card">
+                    <h4><i class="fas fa-eye"></i> Visibility</h4>
+                    <p>{{ selected_forecast.visibility|default_if_none:"-"|floatformat:-3 }} km</p>
+                </div>
+                <div class="highlight-card">
+                    <h4><i class="fas fa-compress-alt"></i> Pressure</h4>
+                    <p>{{ selected_forecast.pressure|default_if_none:"-" }} hPa</p>
+                </div>
+                <div class="highlight-card">
+                    <h4><i class="fas fa-temperature-high"></i> Max Temperature</h4>
+                    <p>{{ selected_forecast.temp_max|default_if_none:"-"|floatformat:0 }}°</p>
+                </div>
+                <div class="highlight-card">
+                    <h4><i class="fas fa-temperature-low"></i> Min Temperature</h4>
+                    <p>{{ selected_forecast.temp_min|default_if_none:"-"|floatformat:0 }}°</p>
+                </div>
+            </div>
+        </div>
+        <div class="crop-recommendations">
+            <h3><i class="fas fa-seedling"></i> Recommended Crops</h3>
+            <div class="crop-list">
+                {% for crop in crop_recommendations %}
+                    <div class="crop-card">
+                        <h4><i class="fas fa-leaf"></i> {{ crop.crop_name }}</h4>
+                        <p><i class="fas fa-chart-line"></i> Yield: {{ crop.predicted_yield|floatformat:2 }} units/acre</p>
+                        <p><i class="fas fa-check-circle"></i> Suitability: {{ crop.suitability|floatformat:2 }}</p>
+                        <p><i class="fas fa-percentage"></i> Confidence: {{ crop.confidence|floatformat:2 }}%</p>
+                    </div>
+                {% endfor %}
+            </div>
         </div>
     </div>
 </div>

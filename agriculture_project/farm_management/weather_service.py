@@ -1,48 +1,51 @@
 import requests
 from django.conf import settings
-from datetime import datetime, timedelta
+from datetime import datetime
 import logging
+logger = logging.getLogger(__name__)
 
-def get_weather_forecast(latitude, longitude, days=7):
-    """
-    Fetch weather forecast for the given coordinates.
-    
-    :param latitude: Latitude of the location
-    :param longitude: Longitude of the location
-    :param days: Number of days to forecast (default is 7)
-    :return: List of dictionaries containing weather data for each day
-    """
+def get_weather_forecast(latitude, longitude):
+    print(f"Fetching weather forecast for lat: {latitude}, lon: {longitude}")
+    logger.info(f"Fetching weather forecast for lat: {latitude}, lon: {longitude}")
     api_key = settings.WEATHER_API_KEY
-    api_url = f"https://pro.openweathermap.org/data/3.0/forecast/climate?q={location}&appid={api_key}&units=metric"
-
-    
-    params = {
-        'lat': latitude,
-        'lon': longitude,
-        'exclude': 'current,minutely,hourly,alerts',
-        'units': 'metric',
-        'appid': api_key
-    }
+    base_url = f"http://api.openweathermap.org/data/2.5/forecast?lat={latitude}&lon={longitude}&appid={api_key}&units=metric"
     
     try:
-        response = requests.get(base_url, params=params)
-        response.raise_for_status()
+        response = requests.get(base_url)
+        response.raise_for_status()  # This will raise an exception for HTTP errors
+        print(f"Weather API response: {response.text}")
+        logger.info(f"Weather API response: {response.text}")
         data = response.json()
-        
         forecast = []
-        for day_data in data['daily'][:days]:
-            forecast.append({
-                'date': datetime.fromtimestamp(day_data['dt']).date(),
-                'temp_max': day_data['temp']['max'],
-                'temp_min': day_data['temp']['min'],
-                'humidity': day_data['humidity'],
-                'wind_speed': day_data['wind_speed'],
-                'rainfall': day_data.get('rain', 0),  # Rain in mm, 0 if not present
-                'weather_description': day_data['weather'][0]['description']
-            })
+        for item in data['list']:
+            forecast_time = datetime.fromtimestamp(item['dt'])
+            forecast_data = {
+                'date': forecast_time.date(),
+                'time': forecast_time.time(),
+                'weather_main': item['weather'][0]['main'],
+                'weather_description': item['weather'][0]['description'],
+                'temp': item['main']['temp'],
+                'temp_min': item['main'].get('temp_min', None),
+                'temp_max': item['main'].get('temp_max', None),
+                'feels_like': item['main'].get('feels_like', None),
+                'pressure': item['main']['pressure'],
+                'humidity': item['main']['humidity'],
+                'visibility': item['visibility'],
+                'wind_speed': item['wind']['speed'],
+                'wind_deg': item['wind']['deg'],
+                'clouds': item['clouds']['all'],
+                'pop': item.get('pop', 0) * 100,  # Probability of precipitation
+            }
+            # Check if rain data is available
+            if 'rain' in item and '3h' in item['rain']:
+                forecast_data['rainfall'] = item['rain']['3h']
+            else:
+                forecast_data['rainfall'] = 0
+            
+            forecast.append(forecast_data)
         
-        return forecast_data
-    
-    except Exception as e:
-        logging.error(f"Error fetching weather forecast: {e}")
+        logging.debug(f"Forecast generated successfully: {forecast}")
+        return forecast
+    except requests.RequestException as e:
+        print(f"Error fetching weather data: {e}")  # Add this line
         return None

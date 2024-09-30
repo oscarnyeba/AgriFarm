@@ -30,7 +30,7 @@ class CustomUserCreationForm(UserCreationForm):
 class FarmForm(forms.ModelForm):
     class Meta:
         model = Farm
-        fields = ['farm_name', 'location', 'latitude', 'longitude']
+        fields = ['name', 'location', 'total_area']  # Include other fields as necessary
 
 class WeatherDataForm(forms.ModelForm):
     class Meta:

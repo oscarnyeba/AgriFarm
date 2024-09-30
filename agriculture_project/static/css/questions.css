@@ -1,9 +1,41 @@
-/* Farm Form Styles */
+/* General Styles */
+body {
+    font-family: 'Roboto', Arial, sans-serif;
+    background-color: #f0f4f0;
+    margin: 0;
+    padding: 0;
+    height: 100vh;
+    color: #333;
+}
 
-.container {
-    max-width: 800px;
-    margin: 0 auto;
-    padding: 40px 20px;
+.login-container {
+    display: flex;
+    height: 100vh;
+}
+
+/* Left Section: Form */
+.left-section {
+    width: 40%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #fff;
+    padding: 20px;
+}
+
+.form-container {
+    width: 100%;
+    max-width: 400px;
+    padding: 40px;
+    background-color: #fff;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    border-radius: 20px;
+    transition: all 0.3s ease;
+}
+
+.form-container:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
 }
 
 .logo {
@@ -11,78 +43,152 @@
     margin: 0 auto 30px;
     width: 120px;
     height: auto;
+    transition: transform 0.3s ease;
 }
 
-h1 {
-    font-size: 28px;
+.logo:hover {
+    transform: scale(1.05);
+}
+
+h2 {
+    font-size: 32px;
     color: #2c3e50;
     margin-bottom: 30px;
     text-align: center;
     font-weight: 700;
-    border-bottom: 2px solid #27ae60;
-    padding-bottom: 10px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
 }
 
-form {
-    background-color: #fff;
-    padding: 30px;
-    border-radius: 15px;
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+.brand-name {
+    color: #3498db;
 }
 
-.form-group {
+.input-container {
+    margin-bottom: 25px;
+    position: relative;
+}
+
+input {
+    width: 100%;
+    padding: 15px;
+    font-size: 16px;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    background-color: #f9f9f9;
     margin-bottom: 20px;
 }
 
-label {
-    display: block;
-    margin-bottom: 5px;
-    color: #333;
-    font-weight: 600;
-}
-
-input[type="text"],
-input[type="number"],
-textarea,
-select {
-    width: 100%;
-    padding: 12px;
-    font-size: 16px;
-    border: 1px solid #bdc3c7;
-    border-radius: 5px;
-    transition: border-color 0.3s ease;
-}
-
-input[type="text"]:focus,
-input[type="number"]:focus,
-textarea:focus,
-select:focus {
-    border-color: #27ae60;
+input:focus {
+    border-color: #3498db;
     outline: none;
+    background-color: #fff;
+    box-shadow: 0 0 10px rgba(39, 174, 96, 0.1);
+}
+
+/* Placeholder Styling */
+input::placeholder {
+    color: #95a5a6;
+    font-size: 14px;
+}
+
+/* Form Error Styling */
+.errorlist {
+    color: #e74c3c;
+    font-size: 14px;
+    list-style-type: none;
+    padding: 0;
+    margin-top: 5px;
 }
 
 button[type="submit"] {
     width: 100%;
-    padding: 12px;
-    background-color: #27ae60;
+    padding: 15px;
+    background-color: #3498db;
     border: none;
-    border-radius: 5px;
+    border-radius: 8px;
     color: #fff;
-    font-size: 16px;
+    font-size: 18px;
+    font-weight: 600;
     cursor: pointer;
-    transition: background-color 0.3s ease;
+    margin-top: 25px;
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+    letter-spacing: 1px;
 }
 
 button[type="submit"]:hover {
-    background-color: #2ecc71;
+    background-color: #3498db;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(46, 204, 113, 0.3);
 }
 
-@media (max-width: 576px) {
-    .container {
-        padding: 20px 10px;
-    }
+.login-redirect {
+    text-align: center;
+    margin-top: 30px;
+    padding-top: 20px;
+    border-top: 1px solid #e0e0e0;
+    font-size: 16px;
+}
 
-    form {
-        padding: 20px;
+.login-redirect a {
+    color: #3498db;
+    text-decoration: none;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    position: relative;
+    display: inline-block;
+    margin-top: 10px;
+    padding: 10px 20px;
+    background-color: #f0f4f0;
+    border-radius: 8px;
+}
+
+.login-redirect a::after {
+    content: none;
+}
+
+.login-redirect a:hover {
+    color: #fff;
+    background-color: #3498db;
+}
+
+/* Right Section: Image */
+.right-section {
+    width: 60%;
+    display: flex;
+    align-items: stretch;
+    overflow: hidden;
+}
+
+.right-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 10s ease;
+}
+
+.right-section:hover .right-image {
+    transform: scale(1.1);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .login-container {
+        flex-direction: column;
+    }
+    
+    .left-section, .right-section {
+        width: 100%;
+    }
+    
+    .right-section {
+        display: none;
+    }
+    
+    .form-container {
+        max-width: 100%;
+        box-shadow: none;
     }
 }

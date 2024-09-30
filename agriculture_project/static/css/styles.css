@@ -1,160 +1,144 @@
-/* General Styles */
-body {
-    font-family: 'Arial', sans-serif;
-    background-color: #f3f7fe;
-    margin: 0;
-    padding: 0;
-    height: 100vh;
+/* farm_form.css */
+
+.dashboard-container {
+    display: flex;
+    min-height: 100vh;
 }
 
-.login-container {
-    display: flex;
-    height: 100vh; /* Full viewport height */
-}
-
-/* Left Section: Form */
-.left-section {
-    width: 50%; /* Adjust this value based on your needs */
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    background-color: #fff;
+.left-panel {
+    width: 250px;
+    background-color: #2c3e50;
+    color: white;
     padding: 20px;
 }
 
-.form-container {
-    width: 100%;
-    max-width: 400px;
-    padding: 40px;
-    background-color: #fff;
-    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
-    border-radius: 10px;
+.logo-container {
+    text-align: center;
+    margin-bottom: 30px;
 }
 
 .logo {
-    display: block;
-    margin: 0 auto 20px;
-    width: 100px;
+    max-width: 100%;
     height: auto;
 }
 
-h2 {
-    font-size: 1.8rem;
-    color: #333;
-    margin-bottom: 20px;
+.menu {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
 }
 
-.brand-name {
-    color: #7B8E46;
+.btn {
+    display: inline-block;
+    padding: 10px 15px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    text-decoration: none;
+    text-align: center;
 }
 
-.input-container {
-    margin-bottom: 15px;
+.btn-back {
+    background-color: #3498db;
+    color: white;
 }
 
-input {
-    width: 100%;
-    padding: 12px;
-    font-size: 1.1rem;
-    border: 1px solid #ccc;
-    border-radius: 5px;
+.btn-logout {
+    background-color: #e74c3c;
+    color: white;
 }
 
-/* Placeholder Styling */
-input::placeholder {
-    color: #999; /* Ensure placeholder text is visible */
-    font-size: 1rem;
+.right-panel {
+    flex-grow: 1;
+    padding: 30px;
+    background-color: #ecf0f1;
 }
 
-/* Align Remember Me and Forgot Password */
+.page-title {
+    color: #2c3e50;
+    margin-bottom: 30px;
+}
+
+.form-container {
+    background-color: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.farm-form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
 .form-group {
     display: flex;
-    align-items: center; /* Align items vertically */
-    justify-content: space-between; /* Distribute space between items */
-    margin-top: 10px;
+    flex-direction: column;
 }
 
-.checkbox-container {
-    display: flex;
-    align-items: center; /* Align checkbox and label vertically */
+.form-group label {
+    margin-bottom: 5px;
+    font-weight: bold;
+    color: #34495e;
 }
 
-.checkbox-container input[type="checkbox"] {
-    margin-right: 8px; /* Space between checkbox and label */
+.form-group input,
+.form-group textarea,
+.form-group select {
+    padding: 10px;
+    border: 1px solid #bdc3c7;
+    border-radius: 4px;
+    font-size: 14px;
 }
 
-.forgot-password {
-    color: #007bff; /* Link color */
-    text-decoration: none; /* Remove underline */
+.help-text {
+    font-size: 12px;
+    color: #7f8c8d;
+    margin-top: 5px;
 }
 
-.forgot-password:hover {
-    text-decoration: underline; /* Underline on hover */
+.error-message {
+    color: #e74c3c;
+    font-size: 12px;
+    margin-top: 5px;
 }
 
-.btn-signin {
-    width: 100%;
-    padding: 12px;
-    background-color: #264226;
-    border: none;
-    border-radius: 5px;
-    color: #fff;
-    font-size: 1.1rem;
-    cursor: pointer;
+.form-actions {
     margin-top: 20px;
 }
 
-.btn-signin:hover {
-    background-color: #7B8E46;
+.btn-save {
+    background-color: #2ecc71;
+    color: white;
 }
 
-/* Button Text Styling */
-.btn-signin {
-    color: #fff; /* Ensure button text is visible */
-}
+/* Responsive design */
+@media (max-width: 768px) {
+    .dashboard-container {
+        flex-direction: column;
+    }
 
-.signup-prompt {
-    text-align: center;
-    margin-top: 20px;
-}
-
-.signup-prompt a {
-    color: #B3A54D;
-    text-decoration: none;
-}
-
-.signup-prompt a:hover {
-    text-decoration: underline;
-}
-
-/* Right Section: Image Background */
-.right-section {
-    width: 50%; /* Adjust based on your needs */
-    display: flex;
-    align-items: stretch; /* Ensure child (image) stretches to container height */
-    overflow: hidden; /* Hide overflow if the image is larger than container */
-}
-
-.right-image {
-    width: auto; /* Maintain aspect ratio */
-    height: 100%; /* Match the height of the container */
-    object-fit: cover; /* Ensure the image covers the container without distortion */
-}
-
-@media (min-width: 768px) {
-    .right-image {
-        max-width: 800px; /* Adjust max-width for larger screens */
+    .left-panel {
+        width: 100%;
     }
 }
 
-.left-section, .right-section {
-    flex-grow: 1; /* Ensure sections grow equally to fill the space */
-}
-.form-container {
-    min-width: 300px; /* Ensure form container has a minimum width */
+/* Add these new styles */
+
+.btn-list {
+    background-color: #f39c12;
+    color: white;
 }
 
-.form-container {
-    border: 2px solid red; /* This will help visually debug layout issues */
+.btn-cancel {
+    background-color: #95a5a6;
+    color: white;
 }
 
+.form-actions {
+    display: flex;
+    justify-content: flex-start;
+    gap: 10px;
+}

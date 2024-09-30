@@ -7,23 +7,34 @@ from django.contrib.auth import login, authenticate, logout
 from django.contrib.auth.decorators import login_required
 from .decorators import farm_owner_required
 from django.urls import reverse
-from .models import Farm, Crop, WeatherData, Recommendation, Profile, User, Alert, CropRotation
-from .forms import FarmForm, WeatherDataForm, RecommendationForm, CustomUserCreationForm
+from .models import Farm, Crop, WeatherData, Recommendation, Profile, User
+from .forms import FarmForm, CustomUserCreationForm
 from django.conf import settings
 import requests
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
-from datetime import datetime, timedelta
+from datetime import datetime, date, time
 from django.contrib.auth.forms import AuthenticationForm
 from django.views.decorators.csrf import csrf_protect 
 from decimal import Decimal
 from django.http import JsonResponse
-from .utils import send_email_alert, send_push_notification, create_alert
-from .prediction import generate_crop_recommendation
 from .weather_service import get_weather_forecast
-from django.core.mail import send_mail
-from django.template.loader import render_to_string
 from django.contrib import messages
+from datetime import datetime, timedelta
+from geopy.geocoders import Nominatim
+import json
+from django.core.serializers.json import DjangoJSONEncoder
+from .utils import assess_crop_suitability, get_crop_recommendations # Add this import at the top of the file
+from itertools import groupby
+from operator import itemgetter
+
+class DateTimeEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, (datetime, date)):
+            return obj.isoformat()
+        elif isinstance(obj, time):
+            return obj.isoformat()
+        return super().default(obj)
 
 def register(request):
     if request.method == 'POST':
@@ -83,7 +94,11 @@ def farm_list_view(request):
     query = request.GET.get('q', '') 
     farms = Farm.objects.filter(user=request.user)
     if query:
-        farms = farms.filter(farm_name__icontains=query)
+        farms = farms.filter(name__icontains=query)
+    
+    # Add ordering to the QuerySet
+    farms = farms.order_by('name')  # Changed from 'farm_name' to 'name'
+    
     paginator = Paginator(farms, 10)
     page = request.GET.get('page')
     try:
@@ -93,157 +108,115 @@ def farm_list_view(request):
     except EmptyPage:
         farms = paginator.page(paginator.num_pages)
     return render(request, 'farm_management/farm_list.html', {'farms': farms, 'query': query})
+logger = logging.getLogger(__name__)
+
+class DateTimeEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, (datetime, date)):
+            return obj.isoformat()
+        elif isinstance(obj, time):
+            return obj.isoformat()
+        return super().default(obj)
+
+
+class CustomJSONEncoder(DjangoJSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, (date, time)):
+            return obj.isoformat()
+        return super().default(obj)
+
+import logging
+
+logger = logging.getLogger(__name__)
 
 @farm_owner_required
 @login_required
 def farm_detail(request, farm_id):
-    farm = get_object_or_404(Farm.objects.prefetch_related('weatherdata_set'), id=farm_id, user=request.user)
-    today = datetime.now().date()
-    five_days_ago = today - timedelta(days=5)
+    farm = get_object_or_404(Farm, id=farm_id)
+    
+    # Get weather forecast
+    forecast_data = get_weather_forecast(farm.latitude, farm.longitude)
 
-    # Fetch or update weather data
-    weather_data_today = fetch_or_update_weather_data(farm, today)
-    weather_history = farm.weatherdata_set.filter(date__gte=five_days_ago, date__lte=today).order_by('-date')
-
-    # Fetch current weather info
-    weather_info = fetch_weather_data(farm.location, None)
-    if weather_info is None:
-        logging.error(f"Failed to fetch weather data for farm: {farm.farm_name}, location: {farm.location}")
-        weather_info = {}
-        messages.warning(request, 'Unable to fetch current weather data at the moment')
-    else:
-        # Convert Unix timestamps to datetime objects
-        weather_info['sys']['sunrise'] = datetime.fromtimestamp(weather_info['sys']['sunrise'])
-        weather_info['sys']['sunset'] = datetime.fromtimestamp(weather_info['sys']['sunset'])
-        weather_info['dt'] = datetime.fromtimestamp(weather_info['dt'])
-
-    # Generate crop recommendations
+    selected_day = request.GET.get('day', 0)
     try:
-        historical_crops = CropRotation.objects.filter(farm=farm).order_by('-year')[:3]
-        recommendations = generate_crop_recommendation(farm, weather_info, historical_crops)
-        print(f"Debug: Recommendations generated: {recommendations}")
-    except Exception as e:
-        logging.error(f"Error generating crop recommendations: {e}")
-        recommendations = []
-        messages.warning(request, 'Unable to generate crop recommendations at the moment')
+        selected_day = int(selected_day)
+        if selected_day < 0 or selected_day >= len(forecast_data):
+            selected_day = 0
+    except ValueError:
+        selected_day = 0
 
-    # Fetch weather forecast and check for extreme weather
-    try:
-        weather_forecast = get_weather_forecast(farm.latitude, farm.longitude)
-        if weather_forecast:
-            check_extreme_weather(farm, weather_forecast)
-        else:
-            messages.warning(request, 'Unable to fetch weather forecast at the moment')
-    except Exception as e:
-        logging.error(f"Error fetching weather forecast: {e}")
-        weather_forecast = None
-        messages.warning(request, 'Unable to fetch weather forecast at the moment')
+    # Get the selected day's forecast
+    selected_forecast = forecast_data[selected_day]
 
-    # Assess weather impact on crops
-    try:
-        current_crops = CropRotation.objects.filter(farm=farm, year=datetime.now().year)
-        weather_impacts = []
-        if weather_forecast:
-            for day in weather_forecast:
-                for crop_rotation in current_crops:
-                    impact = assess_weather_impact(crop_rotation.crop, day)
-                    if impact:
-                        weather_impacts.append({
-                            'date': day['date'],
-                            'crop': crop_rotation.crop.name,
-                            'impact': impact
-                        })
-    except Exception as e:
-        logging.error(f"Error assessing weather impact: {e}")
-        weather_impacts = []
-        messages.warning(request, 'Unable to assess weather impact on crops at the moment')
+    # Extract required weather parameters for crop recommendations
+    temperature = selected_forecast.get('temp', 0)  # Use 0 as default if 'temp' is not found
+    rainfall = selected_forecast.get('rainfall', 0)  # Use 0 as default if 'rainfall' is not found
+    humidity = selected_forecast.get('humidity', 0)  # Use 0 as default if 'humidity' is not found
+
+    # Print debug information
+    print(f"Debug - Temperature: {temperature}, Rainfall: {rainfall}, Humidity: {humidity}")
+
+    # Get crop recommendations with all required parameters
+    crop_recommendations = get_crop_recommendations(
+        farm=farm,
+        temperature=temperature,
+        rainfall=rainfall,
+        humidity=humidity
+    )
 
     context = {
         'farm': farm,
-        'weather_info': weather_info,
-        'weather_data': weather_history,
-        'weather_data_today': weather_data_today,
-        'recommendations': recommendations,
-        'weather_forecast': weather_forecast,
-        'weather_impacts': weather_impacts,
+        'forecast_data': forecast_data,
+        'crop_recommendations': crop_recommendations,
+        'selected_day': selected_day,
+        'selected_forecast': selected_forecast,
     }
     return render(request, 'farm_management/farm_detail.html', context)
 
-def fetch_or_update_weather_data(farm, date):
-    weather_data = WeatherData.objects.filter(farm=farm, date=date).first()
-    if not weather_data:
-        try:
-            weather_info = fetch_weather_data(farm.location, None)
-            if weather_info:
-                with transaction.atomic():
-                    weather_data, created = WeatherData.objects.update_or_create(
-                        farm=farm,
-                        date=date,
-                        defaults={
-                            'temperature': weather_info['main']['temp'],
-                            'feels_like': weather_info['main']['feels_like'],
-                            'temp_min': weather_info['main']['temp_min'],
-                            'temp_max': weather_info['main']['temp_max'],
-                            'pressure': weather_info['main']['pressure'],
-                            'humidity': weather_info['main']['humidity'],
-                            'visibility': weather_info['visibility'],
-                            'wind_speed': weather_info['wind']['speed'],
-                            'wind_direction': weather_info['wind']['deg'],
-                            'wind_gust': weather_info['wind'].get('gust', 0),
-                            'cloudiness': weather_info['clouds']['all'],
-                            'rainfall': weather_info.get('rain', {}).get('1h', 0),
-                            'weather_main': weather_info['weather'][0]['main'],
-                            'weather_description': weather_info['weather'][0]['description'],
-                            'weather_icon': weather_info['weather'][0]['icon'],
-                        }
-                    )
-                logging.info(f"Weather data {'created' if created else 'updated'} for {date}")
-            else:
-                logging.warning("No weather info fetched from API")
-        except Exception as e:
-            logging.error(f"Error fetching weather data: {e}")
-    else:
-        logging.info(f"Using existing weather data for {date}")
-    return weather_data
-
 @login_required
 @csrf_protect
-def add_farm(request):
-    profile = get_object_or_404(Profile, user=request.user)
-    if profile.user_type != 1:
-        return redirect('login')
+def add_farm(request, farm_id=None):
     if request.method == 'POST':
         form = FarmForm(request.POST)
-        try:
-            if form.is_valid():
-                location = form.cleaned_data['location']
-                if latitude is None or longitude is None:
-                    logging.error(f"Geocoding failed for location: {location}")
-                    form.add_error('location', 'Unable to fetch latitude and longitude for this location.')
-                    return render(request, 'farm_management/farm_form.html', {'form': form})
-                with transaction.atomic():
-                    farm = form.save(commit=False)
-                    farm.user = request.user
-                    farm.latitude = latitude
-                    farm.longitude = longitude
-                    farm.save()
-                logging.info(f"Farm added successfully: {farm.farm_name} at {latitude}, {longitude}")
-                return redirect(reverse('farm_list'))
-        except Exception as e:
-            logging.error(f"An error occurred while saving the form: {e}")
-            form.add_error(None, 'An error occurred while saving the farm. Please try again.')
+        if form.is_valid():
+            farm = form.save(commit=False)
+            location = form.cleaned_data['location']
+            
+            # Use geopy to get the latitude and longitude
+            geolocator = Nominatim(user_agent="your_app_name")
+            geocode_result = geolocator.geocode(location)
+            
+            if geocode_result:
+                farm.latitude = geocode_result.latitude
+                farm.longitude = geocode_result.longitude
+            else:
+                # Handle the case where geocoding fails
+                form.add_error('location', 'Could not geocode the provided location.')
+                return render(request, 'farm_management/farm_form.html', {'form': form})
+            
+            farm.user = request.user
+            farm.save()
+            
+            # Fetch weather data based on the stored latitude and longitude
+            weather_forecast = get_weather_forecast(farm.latitude, farm.longitude)
+            
+            # Process weather data as needed
+            
+            logging.info(f"Farm added successfully: {farm.name} at {farm.latitude}, {farm.longitude}")
+            return redirect(reverse('farm_list'))
     else:
         form = FarmForm()
     return render(request, 'farm_management/farm_form.html', {'form': form})
 
-def fetch_weather_data(location, date=None):
-    if not location or not isinstance(location, str):
-        logging.error("Invalid location provided.")
+def fetch_weather_data(lat, lon, date=None):
+    if not lat or not lon:
+        logging.error("Invalid latitude or longitude provided.")
         return None
-    logging.info(f"Fetching weather data for {location} on {date}")
+    logging.info(f"Fetching weather data for location at ({lat}, {lon}) on {date}")
     try:
         api_key = settings.WEATHER_API_KEY
-        api_url = f"https://pro.openweathermap.org/data/3.0/forecast/climate?q={location}&appid={api_key}&units=metric"
+        api_url = f"https://api.openweathermap.org/data/2.5/forecast?lat={lat}&lon={lon}&appid={api_key}"
+
         retry_strategy = Retry(
             total=3,
             backoff_factor=0.1,
@@ -257,7 +230,7 @@ def fetch_weather_data(location, date=None):
         response = session.get(api_url, timeout=10)
         response.raise_for_status()
         weather_data = response.json()
-        logging.info(f'Weather data fetched: {weather_data}')
+        logging.info(f'Weather data fetched successfully')
         return weather_data
     except requests.exceptions.RequestException as e:
         logging.exception(f"Error occurred during API call: {e}")
@@ -277,146 +250,3 @@ def edit_farm(request, farm_id):
     else:
         form = FarmForm(instance=farm)
     return render(request, 'farm_management/edit_farm.html', {'form': form, 'farm': farm})
-
-
-@login_required
-@csrf_protect
-def edit_profile(request):
-    user = request.user
-    if request.method == 'POST':
-        user.first_name = request.POST.get('first_name')
-        user.last_name = request.POST.get('last_name')
-        user.email = request.POST.get('email')
-        user.save()
-        return redirect('farm_list')
-    return render(request, 'farm_management/edit_profile.html', {'user': user})
-
-def check_extreme_weather(farm, weather_forecast):
-    if not weather_forecast:
-        logging.warning(f"No weather forecast available for farm {farm.id}")
-        return
-    for day in weather_forecast:
-        if day['rainfall'] > 50:
-            create_alert(farm, f"Heavy rainfall expected on {day['date']}: {day['rainfall']}mm")
-        if day['temp_min'] < 0:
-            create_alert(farm, f"Frost warning for {day['date']}: Minimum temperature {day['temp_min']}°C")
-        if day['temp_max'] > 35:
-            create_alert(farm, f"Extreme heat warning for {day['date']}: Maximum temperature {day['temp_max']}°C")
-        if day['rainfall'] < 5 and day['temp_max'] > 30:
-            create_alert(farm, f"Drought alert for {day['date']}: High temperature and low rainfall")
-        if day.get('wind_speed', 0) > 60:
-            create_alert(farm, f"Strong wind alert for {day['date']}: Wind speed {day['wind_speed']} km/h")
-        if day['temp_max'] > 30 and day['rainfall'] > 0 and day.get('humidity', 0) > 70:
-            create_alert(farm, f"Potential hail risk on {day['date']}: High temperature, rainfall, and humidity")
-        if 'temp_max' in day and 'temp_min' in day and (day['temp_max'] - day['temp_min']) > 15:
-            create_alert(farm, f"Sudden temperature drop alert for {day['date']}: High {day['temp_max']}°C, Low {day['temp_min']}°C")
-
-def create_alert(farm, message):
-    alert = Alert.objects.create(farm=farm, message=message)
-    subject = f"Weather Alert for {farm.farm_name}"
-    html_message = render_to_string('farm_management/weather_alert.html', {'farm': farm, 'message': message})
-    send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, [farm.user.email], html_message=html_message)
-    send_push_notification(farm.user, message)
-    return alert
-
-@login_required
-def view_alerts(request):
-    alerts = Alert.objects.filter(farm__user=request.user).order_by('-created_at')
-    return render(request, 'farm_management/alerts.html', {'alerts': alerts})
-
-@login_required
-def crop_rotation_suggestion(request, farm_id):
-    farm = get_object_or_404(Farm, id=farm_id, user=request.user)
-    weather_info = fetch_weather_data(farm.location)
-    historical_crops = CropRotation.objects.filter(farm=farm).order_by('-year')[:3]
-    suggested_crops = predict_crop_rotation(
-        weather_info['main']['temp'],
-        weather_info['main']['humidity'],
-        weather_info.get('rain', {}).get('1h', 0),
-        historical_crops
-    )
-    context = {
-        'farm': farm,
-        'suggested_crops': suggested_crops,
-        'weather_info': weather_info,
-    }
-    return render(request, 'farm_management/crop_rotation_suggestion.html', context)
-
-@login_required
-def crop_yield_prediction(request, farm_id, crop_id):
-    farm = get_object_or_404(Farm, id=farm_id, user=request.user)
-    crop = get_object_or_404(Crop, id=crop_id)
-    weather_info = fetch_weather_data(farm.location)
-    predicted_yield = predict_crop_yield(
-        crop,
-        weather_info['main']['temp'],
-        weather_info['main']['humidity'],
-        weather_info.get('rain', {}).get('1h', 0),
-    )
-    context = {
-        'farm': farm,
-        'crop': crop,
-        'predicted_yield': predicted_yield,
-        'weather_info': weather_info,
-    }
-    return render(request, 'farm_management/crop_yield_prediction.html', context)
-
-@login_required
-def weather_impact(request, farm_id):
-    farm = get_object_or_404(Farm, id=farm_id, user=request.user)
-    weather_forecast = get_weather_forecast(farm.latitude, farm.longitude)
-    current_crops = CropRotation.objects.filter(farm=farm, year=datetime.now().year)
-    impacts = []
-    for day in weather_forecast:
-        for crop in current_crops:
-            impact = assess_weather_impact(crop.crop, day)
-            if impact:
-                impacts.append({
-                    'date': day['date'],
-                    'crop': crop.crop,
-                    'impact': impact
-                })
-    context = {
-        'farm': farm,
-        'weather_forecast': weather_forecast,
-        'impacts': impacts,
-    }
-    return render(request, 'farm_management/weather_impact.html', context)
-
-def assess_weather_impact(crop, weather):
-    impact = []
-    if weather['temp_max'] > crop.ideal_temperature_max:
-        impact.append(f"High temperature may stress {crop.name}")
-    elif weather['temp_min'] < crop.ideal_temperature_min:
-        impact.append(f"Low temperature may damage {crop.name}")
-    if weather['rainfall'] > crop.ideal_rainfall_max:
-        impact.append(f"Excessive rainfall may waterlog {crop.name}")
-    elif weather['rainfall'] < crop.ideal_rainfall_min:
-        impact.append(f"Insufficient rainfall may require irrigation for {crop.name}")
-    if weather['humidity'] > crop.ideal_humidity_max:
-        impact.append(f"High humidity may increase disease risk for {crop.name}")
-    elif weather['humidity'] < crop.ideal_humidity_min:
-        impact.append(f"Low humidity may cause water stress for {crop.name}")
-    return impact if impact else None
-
-@login_required
-def weather_alert(request):
-    user = request.user
-    farms = Farm.objects.filter(user=user)
-    alerts = []
-    for farm in farms:
-        weather_forecast = get_weather_forecast(farm.latitude, farm.longitude)
-        if weather_forecast:
-            current_crops = CropRotation.objects.filter(farm=farm, year=datetime.now().year)
-            for day in weather_forecast:
-                for crop_rotation in current_crops:
-                    impacts = assess_weather_impact(crop_rotation.crop, day)
-                    if impacts:
-                        alert_message = f"Weather alert for {farm.farm_name} on {day['date']}:\n"
-                        alert_message += "\n".join(impacts)
-                        alert = create_alert(farm, alert_message)
-                        alerts.append(alert)
-    context = {
-        'alerts': alerts,
-    }
-    return render(request, 'farm_management/weather_alerts.html', context)

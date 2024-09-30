@@ -1,8 +1,9 @@
 from django.core.exceptions import PermissionDenied
-from django.shortcuts import get_object_or_404
+from django.shortcuts import get_object_or_404, redirect
 from functools import wraps
 from .models import Farm
 import logging
+from django.contrib import messages
 
 def farm_owner_required(view_func):
     @wraps(view_func)
@@ -19,8 +20,9 @@ def farm_owner_required(view_func):
         logging.debug(f"Farm found: {farm}, owned by {farm.user}")
 
         if farm.user != request.user:  # Check ownership
-            logging.debug(f"Permission denied. Farm owner: {farm.owner}, request.user: {request.user}")
-            raise PermissionDenied("You are not the owner of this farm.")
+            logging.debug(f"Permission denied. Farm owner: {farm.user}, request.user: {request.user}")
+            messages.error(request, "You do not have permission to access this farm.")
+            return redirect('farm_list')  # Redirect to farm list instead of raising an exception
         
         return view_func(request, *args, **kwargs)
     

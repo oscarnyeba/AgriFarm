@@ -1,67 +1,67 @@
 {% extends "base.html" %}
 {% load static %}
+
 {% block css %}
 <link rel="stylesheet" type="text/css" href="{% static 'css/farmer_profile.css' %}">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 {% endblock %}
 
 {% block title %}Farm List{% endblock %}
 
 {% block content %}
-<!-- Full container -->
-<div class="container">
-    <!-- Left Side: Logo and buttons -->
-    <header class="left-section">
-        <img src="{% static 'images/logo.png' %}" alt="Company Logo" class="logo">
-        <ul class="menu">
-            {% if request.path != '/login/' and request.path != '/register/' %}            {% endif %}
+<div class="dashboard-container">
+    <div class="left-panel">
+        <div class="logo-container">
+            <img src="{% static 'images/logo.png' %}" alt="Company Logo" class="logo">
+        </div>
+        <nav class="menu">
             {% if user.is_authenticated %}
-            <li class="logout-form">
-                <form method="post" action="{% url 'logout' %}">
-                    {% csrf_token %}
-                    <button type="submit" class="btn ask-expert-btn " style="display: block; width: 100%;">Logout</button>
-                </form>
-            </li>
+            <form method="post" action="{% url 'logout' %}" class="logout-form">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-logout">Logout</button>
+            </form>
             {% endif %}
-        </ul>
-    </header>
-    
-    <!-- Right Side: Farms list and search -->
-    <main class="right-section">
-        <h1 class="center-heading">AgriFarm</h1>
+        </nav>
+    </div>
+
+    <div class="right-panel">
+        <h1 class="page-title">AgriFarm Dashboard</h1>
         
-        <!-- Search Form -->
-        <form method="GET" action=".">
-            <div class="search-container">
-                <input type="text" name="q" placeholder="Search.." class="search-input" value="{{ query }}" aria-label="Search farms">
-                <button type="submit" class="search-btn" aria-label="Submit search">
-                    <img src="{% static 'images/search.png' %}" alt="Search Icon">
+        <div class="search-container">
+            <form method="GET" action="." class="search-form">
+                <input type="text" name="q" placeholder="Search farms..." class="search-input" value="{{ query }}" aria-label="Search farms">
+                <button type="submit" class="btn btn-search" aria-label="Submit search">
+                    <i class="fas fa-search"></i>
                 </button>
-            </div>
-        </form>        
+            </form>
+        </div>
         
-        <!-- Farms Table -->
-        <table class="farm-table">
-            <thead>
-                <tr>
-                    <th>Farm Name</th>
-                    <th>Location</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for farm in farms %}
+        <div class="farm-list">
+            <table class="farm-table">
+                <thead>
                     <tr>
-                        <td><a href="{% url 'farm_detail' farm.id %}">{{ farm.farm_name }}</a></td>
-                        <td>{{ farm.location }}</td>
+                        <th>Farm Name</th>
+                        <th>Location</th>
                     </tr>
-                {% empty %}
-                    <tr>
-                        <td colspan="2">No farms found.</td>
-                    </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+                </thead>
+                <tbody>
+                    {% for farm in farms %}
+                        <tr>
+                            <td><a href="{% url 'farm_detail' farm.id %}">{{ farm.name }}</a></td>
+                            <td><i class="fas fa-map-marker-alt"></i> {{ farm.location }}</td>
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td colspan="2">No farms found.</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
         
-        <button type="button" onclick="location.href='{% url 'add_farm' %}'" class="add-farm-btn">Add New Farm</button>
-    </main>
+        <div class="action-container">
+            <a href="{% url 'add_farm' %}" class="btn btn-add-farm">Add New Farm</a>
+        </div>
+    </div>
 </div>
 {% endblock %}

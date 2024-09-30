@@ -1,19 +1,56 @@
 {% extends "base.html" %}
 {% load static %}
+
 {% block css %}
-<link rel="stylesheet" type="text/css" href="{% static 'css/questions.css' %}">
+<link rel="stylesheet" type="text/css" href="{% static 'css/styles.css' %}">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
 {% endblock %}
 
-{% block content %}
-<div class="container mt-4">
-    <h2>Edit Farm: {{ farm.farm_name }}</h2>
-    
-    <form method="POST">
-        {% csrf_token %}
-        {{ form.as_p }}
+{% block title %}Edit Farm: {{ farm.name }}{% endblock %}
 
-        <button type="submit" class="btn btn-success">Save Changes</button>
-        <a href="{% url 'farm_detail' farm.id %}" class="btn btn-secondary">Cancel</a>
-    </form>
+{% block content %}
+<div class="dashboard-container">
+    <div class="left-panel">
+        <div class="logo-container">
+            <img src="{% static 'images/logo.png' %}" alt="Company Logo" class="logo">
+        </div>
+        <nav class="menu">
+            <a href="{% url 'farm_detail' farm.id %}" class="btn btn-back">Back to Farm</a>
+            <a href="{% url 'farm_list' %}" class="btn btn-list">All Farms</a>
+            {% if user.is_authenticated %}
+            <form method="post" action="{% url 'logout' %}" class="logout-form">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-logout">Logout</button>
+            </form>
+            {% endif %}
+        </nav>
+    </div>
+
+    <div class="right-panel">
+        <h1 class="page-title">Edit Farm: {{ farm.name }}</h1>
+        
+        <div class="form-container">
+            <form method="post" class="farm-form">
+                {% csrf_token %}
+                {% for field in form %}
+                    <div class="form-group">
+                        {{ field.label_tag }}
+                        {{ field }}
+                        {% if field.help_text %}
+                            <small class="help-text">{{ field.help_text }}</small>
+                        {% endif %}
+                        {% for error in field.errors %}
+                            <p class="error-message">{{ error }}</p>
+                        {% endfor %}
+                    </div>
+                {% endfor %}
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-save">Save Changes</button>
+                    <a href="{% url 'farm_detail' farm.id %}" class="btn btn-cancel">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
 </div>
 {% endblock %}
